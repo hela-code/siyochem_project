@@ -11,7 +11,7 @@ import {
   X,
   User,
   LogOut,
-  BookOpen,
+  MessageSquare,
   Brain,
   TrendingUp,
   PlusCircle,
@@ -34,7 +34,7 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Home', path: '/', icon: FlaskConical },
-    { name: 'Topics', path: '/topics', icon: BookOpen },
+    { name: 'Feedback', path: '/feedback', icon: MessageSquare },
     { name: 'Quizzes', path: '/quizzes', icon: Brain },
   ]
 

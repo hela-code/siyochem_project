@@ -1,4 +1,4 @@
-// File: /Users/waruna/Downloads/Chem_Hub_Next/app/quizzes/page.jsx
+// File: D:\projects\new\siyochem_project\app\quizzes\page.jsx
 import * as entry from '../../../../app/quizzes/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

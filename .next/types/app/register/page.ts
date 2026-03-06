@@ -1,4 +1,4 @@
-// File: /Users/waruna/Downloads/Chem_Hub_Next/app/register/page.jsx
+// File: D:\projects\new\siyochem_project\app\register\page.jsx
 import * as entry from '../../../../app/register/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
