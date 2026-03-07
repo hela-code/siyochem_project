@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import connectDB from '@/lib/mongodb'
-import User from '@/models/User'
+import { getSQL } from '@/lib/neon'
 import { signToken } from '@/lib/auth'
 
 export async function POST(request) {
   try {
-    await connectDB()
+    const sql = getSQL()
 
     const body = await request.json()
     const { username, email, password, role, firstName, lastName, school, grade } = body
@@ -41,8 +40,10 @@ export async function POST(request) {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] })
-    if (existingUser) {
+    const existing = await sql`
+      SELECT id FROM users WHERE email = ${email} OR username = ${username} LIMIT 1
+    `
+    if (existing.length > 0) {
       return NextResponse.json(
         { success: false, message: 'User with this email or username already exists' },
         { status: 400 }
@@ -54,17 +55,14 @@ export async function POST(request) {
     const hashedPassword = await bcrypt.hash(password, salt)
 
     // Create new user
-    const user = new User({
-      username,
-      email,
-      password: hashedPassword,
-      role,
-      profile: { firstName, lastName, school, grade },
-    })
+    const newUsers = await sql`
+      INSERT INTO users (username, email, password, role, first_name, last_name, school, grade)
+      VALUES (${username}, ${email}, ${hashedPassword}, ${role}, ${firstName}, ${lastName}, ${school || null}, ${grade || null})
+      RETURNING id, username, email, role, first_name, last_name, school, grade
+    `
+    const user = newUsers[0]
 
-    await user.save()
-
-    const token = signToken({ userId: user._id, role: user.role })
+    const token = signToken({ userId: user.id, role: user.role })
 
     return NextResponse.json(
       {
@@ -72,11 +70,16 @@ export async function POST(request) {
         message: 'User registered successfully',
         token,
         user: {
-          id: user._id,
+          id: user.id,
           username: user.username,
           email: user.email,
           role: user.role,
-          profile: user.profile,
+          profile: {
+            firstName: user.first_name,
+            lastName: user.last_name,
+            school: user.school,
+            grade: user.grade,
+          },
         },
       },
       { status: 201 }

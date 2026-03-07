@@ -23,6 +23,17 @@ const useAuthStore = create(
           set({ user, token, isAuthenticated: true, loading: false })
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
+          // Re-fetch full user data from /me to get all fields (socialLinks, etc.)
+          try {
+            const meResponse = await axios.get('/api/auth/me')
+            // Only update if token hasn't changed (no concurrent login/logout)
+            if (get().token === token) {
+              set({ user: meResponse.data.user })
+            }
+          } catch (_) {
+            // Login data is already set, /me refresh is a bonus
+          }
+
           return { success: true }
         } catch (error) {
           set({ loading: false })
@@ -67,9 +78,16 @@ const useAuthStore = create(
         try {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
           const response = await axios.get('/api/auth/me')
-          set({ user: response.data.user, isAuthenticated: true, loading: false })
+          // Only update if the token hasn't changed since we started
+          // (prevents race condition where a new login overwrites with stale data)
+          if (get().token === token) {
+            set({ user: response.data.user, isAuthenticated: true, loading: false })
+          }
         } catch (error) {
-          get().logout()
+          // Only logout if the token is still the same (wasn't replaced by a new login)
+          if (get().token === token) {
+            get().logout()
+          }
         }
       },
 

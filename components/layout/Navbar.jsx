@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -11,30 +11,48 @@ import {
   X,
   User,
   LogOut,
-  BookOpen,
+  MessageSquare,
   Brain,
   TrendingUp,
   PlusCircle,
+  Send,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import SearchModal from '@/components/ui/SearchModal'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { user, isAuthenticated, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
+  const dropdownRef = useRef(null)
+
+  // Auto-close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false)
+      }
+    }
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isDropdownOpen])
 
   const handleLogout = () => {
     logout()
     router.push('/')
     setIsMenuOpen(false)
+    setIsDropdownOpen(false)
   }
 
   const navItems = [
     { name: 'Home', path: '/', icon: FlaskConical },
-    { name: 'Topics', path: '/topics', icon: BookOpen },
+    { name: 'Topics', path: '/topics', icon: TrendingUp },
+    { name: 'Feedback', path: '/feedback', icon: MessageSquare },
     { name: 'Quizzes', path: '/quizzes', icon: Brain },
   ]
 
@@ -45,7 +63,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="glass-morphism sticky top-0 z-40 border-b border-white/10">
+      <nav className="glass-morphism sticky top-0 z-50 border-b border-white/10">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -101,39 +119,58 @@ const Navbar = () => {
 
               {/* User menu */}
               {isAuthenticated ? (
-                <div className="hidden md:block relative">
+                <div className="hidden md:block relative" ref={dropdownRef}>
                   <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center space-x-2 p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
-                    </div>
+                    {user?.profile?.avatar ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden">
+                        <img src={user.profile.avatar} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                    )}
                     <span className="hidden md:block text-gray-300">
                       {user?.profile?.firstName} {user?.profile?.lastName}
                     </span>
                   </button>
 
                   {/* Dropdown menu */}
-                  {isMenuOpen && (
+                  {isDropdownOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-56 glass-card rounded-xl shadow-xl border border-white/20"
+                      className="absolute right-0 mt-2 w-56 z-50 glass-card rounded-xl shadow-xl border border-white/20"
                     >
-                      <div className="p-4 border-b border-white/10">
-                        <p className="text-white font-medium">
-                          {user?.profile?.firstName} {user?.profile?.lastName}
-                        </p>
-                        <p className="text-gray-400 text-sm">{user?.email}</p>
-                        <p className="text-primary-400 text-xs mt-1 capitalize">{user?.role}</p>
+                      <div className="p-4 border-b border-white/10 flex items-center gap-3">
+                        {user?.profile?.avatar ? (
+                          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
+                            <img src={user.profile.avatar} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center shrink-0">
+                            <span className="text-white text-sm font-bold">
+                              {user?.profile?.firstName?.[0] || ''}{user?.profile?.lastName?.[0] || ''}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-white font-medium">
+                            {user?.profile?.firstName} {user?.profile?.lastName}
+                          </p>
+                          <p className="text-gray-400 text-sm">{user?.email}</p>
+                          <p className="text-primary-400 text-xs mt-1 capitalize">{user?.role}</p>
+                        </div>
                       </div>
 
                       <div className="p-2">
                         <Link
                           href="/dashboard"
-                          onClick={() => setIsMenuOpen(false)}
+                          onClick={() => setIsDropdownOpen(false)}
                           className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                         >
                           <TrendingUp className="w-4 h-4" />
@@ -142,17 +179,26 @@ const Navbar = () => {
 
                         <Link
                           href={`/profile/${user?.id}`}
-                          onClick={() => setIsMenuOpen(false)}
+                          onClick={() => setIsDropdownOpen(false)}
                           className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                         >
                           <User className="w-4 h-4" />
                           <span>Profile</span>
                         </Link>
 
+                        <Link
+                          href="/messages"
+                          onClick={() => setIsDropdownOpen(false)}
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                        >
+                          <Send className="w-4 h-4" />
+                          <span>Messages</span>
+                        </Link>
+
                         {user?.role === 'teacher' && (
                           <Link
                             href="/create-quiz"
-                            onClick={() => setIsMenuOpen(false)}
+                            onClick={() => setIsDropdownOpen(false)}
                             className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                           >
                             <PlusCircle className="w-4 h-4" />
@@ -195,7 +241,7 @@ const Navbar = () => {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="md:hidden glass-morphism border-b border-white/10"
+          className="md:hidden glass-morphism border-b border-white/10 sticky top-16 z-50"
         >
           <div className="container mx-auto px-4 py-4 space-y-2">
             {navItems.map((item) => {
@@ -236,6 +282,15 @@ const Navbar = () => {
                   >
                     <User className="w-4 h-4" />
                     <span>Profile</span>
+                  </Link>
+
+                  <Link
+                    href="/messages"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Messages</span>
                   </Link>
 
                   {user?.role === 'teacher' && (
