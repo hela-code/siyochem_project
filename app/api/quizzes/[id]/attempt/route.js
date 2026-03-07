@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Quiz from '@/models/Quiz'
-import User from '@/models/User'
+import { getSQL } from '@/lib/neon'
 import { requireAuth } from '@/lib/auth'
 
 // POST /api/quizzes/[id]/attempt
@@ -10,13 +8,16 @@ export async function POST(request, { params }) {
   if (error) return error
 
   try {
-    await connectDB()
+    const sql = getSQL()
 
     const body = await request.json()
     const { answers, timeSpent } = body
 
-    const quiz = await Quiz.findById(params.id)
-    if (!quiz || !quiz.isPublished) {
+    // Check quiz exists and is published
+    const quizzes = await sql`
+      SELECT * FROM quizzes WHERE id = ${params.id} AND is_published = true
+    `
+    if (quizzes.length === 0) {
       return NextResponse.json(
         { success: false, message: 'Quiz not found or not published' },
         { status: 404 }
@@ -26,20 +27,25 @@ export async function POST(request, { params }) {
     const userId = decoded.userId
 
     // Check if user has already attempted
-    const existingAttempt = quiz.attempts.find(
-      (attempt) => attempt.student.toString() === userId
-    )
-    if (existingAttempt) {
+    const existing = await sql`
+      SELECT id FROM quiz_attempts WHERE quiz_id = ${params.id} AND student_id = ${userId}
+    `
+    if (existing.length > 0) {
       return NextResponse.json(
         { success: false, message: 'You have already attempted this quiz' },
         { status: 400 }
       )
     }
 
+    // Fetch questions with correct answers
+    const questions = await sql`
+      SELECT * FROM quiz_questions WHERE quiz_id = ${params.id} ORDER BY question_index
+    `
+
     // Calculate score
     let correctAnswers = 0
     const processedAnswers = answers.map((answer, index) => {
-      const isCorrect = answer.selectedAnswer === quiz.questions[index].correctAnswer
+      const isCorrect = answer.selectedAnswer === questions[index].correct_answer
       if (isCorrect) correctAnswers++
       return {
         questionIndex: index,
@@ -50,27 +56,28 @@ export async function POST(request, { params }) {
     })
 
     const score = correctAnswers
-    const percentage = (score / quiz.questions.length) * 100
+    const percentage = (score / questions.length) * 100
     const passed = percentage >= 60
-    const averageTimePerQuestion = timeSpent / quiz.questions.length
+    const averageTimePerQuestion = timeSpent / questions.length
 
-    quiz.attempts.push({
-      student: userId,
-      submittedAt: new Date(),
-      answers: processedAnswers,
-      score,
-      percentage,
-      passed,
-      timeSpent,
-      averageTimePerQuestion,
-    })
+    // Insert attempt
+    const attemptResult = await sql`
+      INSERT INTO quiz_attempts (quiz_id, student_id, submitted_at, score, percentage, passed, time_spent, average_time_per_question)
+      VALUES (${params.id}, ${userId}, NOW(), ${score}, ${percentage}, ${passed}, ${timeSpent}, ${averageTimePerQuestion})
+      RETURNING *
+    `
+    const attempt = attemptResult[0]
 
-    await quiz.save()
+    // Insert answers
+    for (const ans of processedAnswers) {
+      await sql`
+        INSERT INTO quiz_attempt_answers (attempt_id, question_index, selected_answer, is_correct, time_spent)
+        VALUES (${attempt.id}, ${ans.questionIndex}, ${ans.selectedAnswer}, ${ans.isCorrect}, ${ans.timeSpent})
+      `
+    }
 
     // Update user stats
-    await User.findByIdAndUpdate(userId, {
-      $inc: { 'stats.quizzesTaken': 1 },
-    })
+    await sql`UPDATE users SET quizzes_taken = quizzes_taken + 1 WHERE id = ${userId}`
 
     return NextResponse.json(
       {
@@ -80,7 +87,7 @@ export async function POST(request, { params }) {
           score,
           percentage,
           passed,
-          totalQuestions: quiz.questions.length,
+          totalQuestions: questions.length,
           correctAnswers,
           timeSpent,
           averageTimePerQuestion,

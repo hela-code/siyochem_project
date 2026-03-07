@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Post from '@/models/Post'
+import { getSQL } from '@/lib/neon'
 import { requireAuth } from '@/lib/auth'
 
 // POST /api/posts/[id]/like
@@ -9,10 +8,11 @@ export async function POST(request, { params }) {
   if (error) return error
 
   try {
-    await connectDB()
+    const sql = getSQL()
 
-    const post = await Post.findById(params.id)
-    if (!post) {
+    // Check post exists
+    const posts = await sql`SELECT id FROM posts WHERE id = ${params.id}`
+    if (posts.length === 0) {
       return NextResponse.json(
         { success: false, message: 'Post not found' },
         { status: 404 }
@@ -20,20 +20,29 @@ export async function POST(request, { params }) {
     }
 
     const userId = decoded.userId
-    const likeIndex = post.likes.findIndex((like) => like.user.toString() === userId)
 
-    if (likeIndex > -1) {
-      post.likes.splice(likeIndex, 1)
+    // Check if already liked
+    const existing = await sql`
+      SELECT id FROM post_likes WHERE post_id = ${params.id} AND user_id = ${userId}
+    `
+
+    let liked
+    if (existing.length > 0) {
+      // Unlike
+      await sql`DELETE FROM post_likes WHERE post_id = ${params.id} AND user_id = ${userId}`
+      liked = false
     } else {
-      post.likes.push({ user: userId })
+      // Like
+      await sql`INSERT INTO post_likes (post_id, user_id) VALUES (${params.id}, ${userId})`
+      liked = true
     }
 
-    await post.save()
+    const countResult = await sql`SELECT COUNT(*) as count FROM post_likes WHERE post_id = ${params.id}`
 
     return NextResponse.json({
       success: true,
-      liked: likeIndex === -1,
-      likesCount: post.likes.length,
+      liked,
+      likesCount: parseInt(countResult[0].count),
     })
   } catch (error) {
     console.error('Like post error:', error)

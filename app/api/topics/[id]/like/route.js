@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Topic from '@/models/Topic'
+import { getSQL } from '@/lib/neon'
 import { requireAuth } from '@/lib/auth'
 
 // POST /api/topics/[id]/like
@@ -9,10 +8,10 @@ export async function POST(request, { params }) {
   if (error) return error
 
   try {
-    await connectDB()
+    const sql = getSQL()
 
-    const topic = await Topic.findById(params.id)
-    if (!topic) {
+    const topics = await sql`SELECT id FROM topics WHERE id = ${params.id}`
+    if (topics.length === 0) {
       return NextResponse.json(
         { success: false, message: 'Topic not found' },
         { status: 404 }
@@ -20,20 +19,27 @@ export async function POST(request, { params }) {
     }
 
     const userId = decoded.userId
-    const likeIndex = topic.likes.findIndex((like) => like.user.toString() === userId)
 
-    if (likeIndex > -1) {
-      topic.likes.splice(likeIndex, 1)
+    // Check if already liked
+    const existing = await sql`
+      SELECT id FROM topic_likes WHERE topic_id = ${params.id} AND user_id = ${userId}
+    `
+
+    let liked
+    if (existing.length > 0) {
+      await sql`DELETE FROM topic_likes WHERE topic_id = ${params.id} AND user_id = ${userId}`
+      liked = false
     } else {
-      topic.likes.push({ user: userId })
+      await sql`INSERT INTO topic_likes (topic_id, user_id) VALUES (${params.id}, ${userId})`
+      liked = true
     }
 
-    await topic.save()
+    const countResult = await sql`SELECT COUNT(*) as count FROM topic_likes WHERE topic_id = ${params.id}`
 
     return NextResponse.json({
       success: true,
-      liked: likeIndex === -1,
-      likesCount: topic.likes.length,
+      liked,
+      likesCount: parseInt(countResult[0].count),
     })
   } catch (error) {
     console.error('Like topic error:', error)
