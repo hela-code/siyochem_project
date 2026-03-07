@@ -60,8 +60,8 @@ export default function Login() {
             >
               <FlaskConical className="w-8 h-8 text-white" />
             </motion.div>
-            <h1 className="text-3xl font-bold text-gradient mb-2">Welcome Back</h1>
-            <p className="text-gray-300">Sign in to your Chem Hub account</p>
+            <h1 className="text-3xl font-bold text-gradient mb-2">Welcome Back to the Lab</h1>
+            <p className="text-gray-300">Enter your Chem Hub lab credentials</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,13 +76,13 @@ export default function Login() {
                   onChange={handleChange}
                   required
                   className="input-field pl-10"
-                  placeholder="student@example.com"
+                  placeholder="chemist@example.com"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Password</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Secret Formula</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -112,10 +112,10 @@ export default function Login() {
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Signing in...</span>
+                  <span>Entering the Lab...</span>
                 </div>
               ) : (
-                'Sign In'
+                'Enter the Lab'
               )}
             </button>
           </form>
@@ -133,7 +133,7 @@ export default function Login() {
             <p className="text-gray-300">
               Don&apos;t have an account?{' '}
               <Link href="/register" className="text-primary-400 hover:text-primary-300 transition-colors">
-                Sign up
+                Join the Lab
               </Link>
             </p>
           </div>

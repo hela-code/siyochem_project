@@ -25,7 +25,7 @@ export default function CreateQuiz() {
 
   useEffect(() => {
     if (!loading && (!isAuthenticated || user?.role !== 'teacher')) {
-      toast.error('Only teachers can create quizzes')
+      toast.error('Only teachers can design experiments')
       router.push('/quizzes')
     }
   }, [loading, isAuthenticated, user, router])
@@ -91,11 +91,11 @@ export default function CreateQuiz() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <button onClick={() => router.push('/quizzes')} className="flex items-center text-gray-400 hover:text-white transition-colors">
-            <ArrowLeft className="w-5 h-5 mr-2" />Back to Quizzes
+            <ArrowLeft className="w-5 h-5 mr-2" />Back to Lab Tests
           </button>
-          <h1 className="text-3xl font-bold text-white">Create New Quiz</h1>
+          <h1 className="text-3xl font-bold text-white">Design New Experiment</h1>
           <button onClick={handleSubmit} className="btn-primary flex items-center">
-            <Save className="w-5 h-5 mr-2" />Save Quiz
+            <Save className="w-5 h-5 mr-2" />Save Experiment
           </button>
         </div>
 
@@ -103,12 +103,12 @@ export default function CreateQuiz() {
           {/* Quiz Info */}
           <div className="glass-card p-6 rounded-xl">
             <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
-              <Brain className="w-5 h-5 mr-2 text-primary-400" />Quiz Information
+              <Brain className="w-5 h-5 mr-2 text-primary-400" />Experiment Details
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-gray-300 text-sm font-medium mb-2">Quiz Title *</label>
-                <input type="text" value={quizData.title} onChange={(e) => setQuizData({ ...quizData, title: e.target.value })} className="input-field" placeholder="Enter quiz title" required />
+                <label className="block text-gray-300 text-sm font-medium mb-2">Experiment Title *</label>
+                <input type="text" value={quizData.title} onChange={(e) => setQuizData({ ...quizData, title: e.target.value })} className="input-field" placeholder="Enter experiment title" required />
               </div>
               <div>
                 <label className="block text-gray-300 text-sm font-medium mb-2">Category</label>
@@ -119,11 +119,11 @@ export default function CreateQuiz() {
             </div>
             <div className="mt-6">
               <label className="block text-gray-300 text-sm font-medium mb-2">Description *</label>
-              <textarea value={quizData.description} onChange={(e) => setQuizData({ ...quizData, description: e.target.value })} className="input-field resize-none" rows={3} placeholder="Describe what this quiz covers..." required />
+              <textarea value={quizData.description} onChange={(e) => setQuizData({ ...quizData, description: e.target.value })} className="input-field resize-none" rows={3} placeholder="Describe what this experiment covers..." required />
             </div>
             <div className="mt-6">
               <label className="block text-gray-300 text-sm font-medium mb-2">
-                <Clock className="w-4 h-4 inline mr-1" />Duration (minutes)
+                <Clock className="w-4 h-4 inline mr-1" />Reaction Time (minutes)
               </label>
               <input type="number" value={quizData.duration} onChange={(e) => setQuizData({ ...quizData, duration: parseInt(e.target.value) || 0 })} className="input-field" min="5" max="180" />
             </div>
@@ -133,10 +133,10 @@ export default function CreateQuiz() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-white flex items-center">
-                <BookOpen className="w-5 h-5 mr-2 text-primary-400" />Questions ({quizData.questions.length})
+                <BookOpen className="w-5 h-5 mr-2 text-primary-400" />Compounds ({quizData.questions.length})
               </h2>
               <button type="button" onClick={addQuestion} className="btn-secondary flex items-center">
-                <Plus className="w-4 h-4 mr-2" />Add Question
+                <Plus className="w-4 h-4 mr-2" />Add Compound
               </button>
             </div>
 

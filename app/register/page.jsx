@@ -75,13 +75,13 @@ export default function Register() {
               <FlaskConical className="w-8 h-8 text-white" />
             </motion.div>
             <h1 className="text-3xl font-bold text-gradient mb-2">Join Chem Hub</h1>
-            <p className="text-gray-300">Create your account to start learning</p>
+            <p className="text-gray-300">Create your formula to enter the lab</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Role Selection */}
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">I am a...</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">My role in the lab...</label>
               <div className="grid grid-cols-2 gap-3">
                 {['student', 'teacher'].map((role) => (
                   <button
@@ -159,7 +159,7 @@ export default function Register() {
                   onChange={handleChange}
                   required
                   className="input-field pl-10"
-                  placeholder="student@example.com"
+                  placeholder="chemist@example.com"
                 />
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function Register() {
 
             {/* Password */}
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Password</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Secret Formula</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -222,7 +222,7 @@ export default function Register() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Confirm Password</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Confirm Formula</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -246,10 +246,10 @@ export default function Register() {
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Creating account...</span>
+                  <span>Synthesizing profile...</span>
                 </div>
               ) : (
-                'Create Account'
+                'Synthesize Profile'
               )}
             </button>
           </form>
@@ -258,7 +258,7 @@ export default function Register() {
             <p className="text-gray-300">
               Already have an account?{' '}
               <Link href="/login" className="text-primary-400 hover:text-primary-300 transition-colors">
-                Sign in
+                Enter the Lab
               </Link>
             </p>
           </div>

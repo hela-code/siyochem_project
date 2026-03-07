@@ -15,9 +15,9 @@ import {
 
 const tabs = [
   { id: 'all', label: 'All', icon: SearchIcon },
-  { id: 'topics', label: 'Topics', icon: BookOpen },
-  { id: 'users', label: 'Users', icon: Users },
-  { id: 'quizzes', label: 'Quizzes', icon: Brain },
+  { id: 'topics', label: 'Experiments', icon: BookOpen },
+  { id: 'users', label: 'Chemists', icon: Users },
+  { id: 'quizzes', label: 'Lab Tests', icon: Brain },
 ]
 
 const categories = [
@@ -86,7 +86,7 @@ export default function SearchPage() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search topics, users, quizzes..."
+            placeholder="Search experiments, chemists, lab tests..."
             className="input-field pl-12 pr-12 text-lg py-4"
             autoFocus
           />
@@ -154,9 +154,9 @@ export default function SearchPage() {
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-400">by {result.author}</span>
                         <div className="flex items-center space-x-2 text-gray-400">
-                          <span>{result.stats.likes} likes</span>
+                          <span>{result.stats.likes} catalyzes</span>
                           <span>•</span>
-                          <span>{result.stats.posts} posts</span>
+                          <span>{result.stats.posts} reactions</span>
                         </div>
                       </div>
                     )}
@@ -189,15 +189,15 @@ export default function SearchPage() {
             <h3 className="text-xl font-semibold text-white mb-2">No results found</h3>
             <p className="text-gray-300 mb-6">Try different keywords or browse categories</p>
             <div className="flex justify-center space-x-4">
-              <button onClick={() => setActiveTab('topics')} className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">Browse Topics</button>
-              <button onClick={() => setActiveTab('quizzes')} className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">Browse Quizzes</button>
+              <button onClick={() => setActiveTab('topics')} className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">Browse Experiments</button>
+              <button onClick={() => setActiveTab('quizzes')} className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">Browse Lab Tests</button>
             </div>
           </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
             <SearchIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">Start searching</h3>
-            <p className="text-gray-300">Enter keywords to find topics, users, or quizzes</p>
+            <p className="text-gray-300">Enter keywords to find experiments, chemists, or lab tests</p>
           </motion.div>
         )}
       </div>
@@ -207,7 +207,7 @@ export default function SearchPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-12">
           <div className="glass-card p-6 rounded-xl">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
-              <TrendingUp className="w-5 h-5 mr-2 text-primary-400" />Trending Searches
+              <TrendingUp className="w-5 h-5 mr-2 text-primary-400" />Trending Reactions
             </h2>
             <div className="flex flex-wrap gap-2">
               {['Chemical Bonding', 'Organic Chemistry', 'Thermodynamics', 'Periodic Table', 'Reaction Mechanisms'].map((term) => (

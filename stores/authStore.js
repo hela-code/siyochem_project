@@ -111,6 +111,12 @@ const useAuthStore = create(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Restore axios Authorization header after localStorage rehydration
+        if (state?.token) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
+        }
+      },
     }
   )
 )

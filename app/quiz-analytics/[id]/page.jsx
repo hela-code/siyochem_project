@@ -88,7 +88,7 @@ export default function QuizAnalytics() {
             </button>
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">{analytics.quiz.title} - Analytics</h1>
-              <p className="text-gray-300">Detailed performance analysis and insights</p>
+              <p className="text-gray-300">Detailed reaction analysis and lab insights</p>
             </div>
           </div>
           <button className="btn-secondary flex items-center">
@@ -100,9 +100,9 @@ export default function QuizAnalytics() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {[
             { icon: Users, label: 'Total Attempts', value: analytics.quiz.totalAttempts, change: '+12%', color: 'text-green-400' },
-            { icon: BarChart3, label: 'Average Score', value: `${analytics.quiz.averageScore}%`, change: '+5%', color: 'text-green-400' },
-            { icon: CheckCircle, label: 'Pass Rate', value: `${analytics.quiz.passRate}%`, change: '+3%', color: 'text-green-400' },
-            { icon: Clock, label: 'Avg. Time', value: formatTime(analytics.quiz.averageTimeSpent), change: '-2m', color: 'text-yellow-400' },
+            { icon: BarChart3, label: 'Average Yield', value: `${analytics.quiz.averageScore}%`, change: '+5%', color: 'text-green-400' },
+            { icon: CheckCircle, label: 'Success Rate', value: `${analytics.quiz.passRate}%`, change: '+3%', color: 'text-green-400' },
+            { icon: Clock, label: 'Avg. Reaction Time', value: formatTime(analytics.quiz.averageTimeSpent), change: '-2m', color: 'text-yellow-400' },
           ].map(({ icon: Icon, label, value, change, color }) => (
             <div key={label} className="glass-card p-6 rounded-xl">
               <div className="flex items-center justify-between mb-2">
