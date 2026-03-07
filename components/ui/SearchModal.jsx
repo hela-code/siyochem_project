@@ -102,7 +102,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                     value={query}
                     onChange={(e) => handleSearch(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search topics, users, quizzes..."
+                    placeholder="Search experiments, chemists, lab tests..."
                     className="input-field pl-12 pr-12"
                     autoFocus
                   />
@@ -120,7 +120,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                 {loading ? (
                   <div className="p-8 text-center">
                     <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-300">Searching...</p>
+                    <p className="text-gray-300">Scanning the periodic table...</p>
                   </div>
                 ) : query.trim().length >= 2 ? (
                   searchResults.length > 0 ? (
@@ -161,7 +161,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                   <div className="p-8 text-center">
                     <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-300">Start typing to search</p>
-                    <p className="text-gray-400 text-sm mt-2">Search topics, users, and quizzes</p>
+                    <p className="text-gray-400 text-sm mt-2">Search experiments, chemists, and lab tests</p>
                   </div>
                 )}
               </div>
@@ -172,10 +172,10 @@ const SearchModal = ({ isOpen, onClose }) => {
                   <h3 className="text-white font-medium mb-4">Quick Links</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { path: '/topics', icon: BookOpen, label: 'Browse Topics', sub: 'Explore chemistry discussions' },
-                      { path: '/quizzes', icon: Brain, label: 'Take Quizzes', sub: 'Test your knowledge' },
-                      { path: '/dashboard', icon: TrendingUp, label: 'Dashboard', sub: 'View your progress' },
-                      { path: '/search', icon: Users, label: 'Find Users', sub: 'Connect with students' },
+                      { path: '/topics', icon: BookOpen, label: 'Browse Experiments', sub: 'Explore chemistry reactions' },
+                      { path: '/quizzes', icon: Brain, label: 'Run Lab Tests', sub: 'Test your compounds' },
+                      { path: '/dashboard', icon: TrendingUp, label: 'Lab Dashboard', sub: 'View your reaction progress' },
+                      { path: '/search', icon: Users, label: 'Find Chemists', sub: 'Bond with lab partners' },
                     ].map(({ path, icon: Icon, label, sub }) => (
                       <button
                         key={path}

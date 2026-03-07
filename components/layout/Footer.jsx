@@ -11,9 +11,9 @@ const Footer = () => {
   const footerLinks = {
     platform: [
       { name: 'Home', path: '/' },
-      { name: 'Topics', path: '/topics' },
-      { name: 'Quizzes', path: '/quizzes' },
-      { name: 'Dashboard', path: '/dashboard' },
+      { name: 'Experiments', path: '/topics' },
+      { name: 'Lab Tests', path: '/quizzes' },
+      { name: 'Lab Dashboard', path: '/dashboard' },
     ],
     resources: [
       { name: 'Study Materials', path: '#' },
@@ -78,7 +78,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Platform</h3>
+            <h3 className="text-white font-semibold mb-4">The Lab</h3>
             <ul className="space-y-2">
               {footerLinks.platform.map((link) => (
                 <li key={link.name}>
@@ -95,7 +95,7 @@ const Footer = () => {
 
           {/* Resources */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Resources</h3>
+            <h3 className="text-white font-semibold mb-4">Lab Resources</h3>
             <ul className="space-y-2">
               {footerLinks.resources.map((link) => (
                 <li key={link.name}>
@@ -166,6 +166,12 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-300 text-sm">
               © {currentYear} Chem Hub. All rights reserved.
+            </p>
+            <p className="text-gray-500 text-xs mt-1">
+              Powered by{' '}
+              <a href="https://github.com/hela-code" target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:text-primary-300 transition-colors font-medium">
+                HelaCode
+              </a>
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link

@@ -167,7 +167,7 @@ export default function QuizDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary-400 animate-spin mx-auto mb-4" />
-          <p className="text-gray-300 text-lg">Loading quiz...</p>
+          <p className="text-gray-300 text-lg">Setting up the experiment...</p>
         </div>
       </div>
     )
@@ -183,7 +183,7 @@ export default function QuizDetail() {
           <p className="text-gray-300 mb-6">{error}</p>
           <div className="flex gap-4 justify-center">
             <button onClick={() => router.push('/quizzes')} className="btn-secondary">
-              Back to Quizzes
+              Back to Lab Tests
             </button>
             <button onClick={fetchQuiz} className="btn-primary flex items-center">
               <RefreshCw className="w-4 h-4 mr-2" />Retry
@@ -206,7 +206,7 @@ export default function QuizDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary-400 animate-spin mx-auto mb-4" />
-          <p className="text-gray-300 text-lg">Submitting your answers...</p>
+          <p className="text-gray-300 text-lg">Analyzing your compounds...</p>
         </div>
       </div>
     )
@@ -218,7 +218,7 @@ export default function QuizDetail() {
       <div className="min-h-screen">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto">
           <button onClick={() => router.push('/quizzes')} className="flex items-center text-gray-400 hover:text-white transition-colors mb-6">
-            <ArrowLeft className="w-5 h-5 mr-2" />Back to Quizzes
+            <ArrowLeft className="w-5 h-5 mr-2" />Back to Lab Tests
           </button>
 
           <div className="glass-card p-8 rounded-xl mb-6">
@@ -241,10 +241,10 @@ export default function QuizDetail() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               {[
-                { icon: Clock, label: 'Duration', value: `${quiz.duration} min` },
-                { icon: Brain, label: 'Questions', value: quiz.questions.length },
-                { icon: Award, label: 'Pass Mark', value: `${quiz.passingMarks}/${quiz.totalMarks}` },
-                { icon: BarChart3, label: 'Total Marks', value: quiz.totalMarks },
+                { icon: Clock, label: 'Reaction Time', value: `${quiz.duration} min` },
+                { icon: Brain, label: 'Compounds', value: quiz.questions.length },
+                { icon: Award, label: 'Activation Energy', value: `${quiz.passingMarks}/${quiz.totalMarks}` },
+                { icon: BarChart3, label: 'Total Yield', value: quiz.totalMarks },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="bg-white/5 rounded-lg p-4 text-center">
                   <Icon className="w-6 h-6 text-primary-400 mx-auto mb-2" />
@@ -255,7 +255,7 @@ export default function QuizDetail() {
             </div>
 
             <div className="mb-6">
-              <h3 className="text-xl font-semibold text-white mb-3">Instructions</h3>
+              <h3 className="text-xl font-semibold text-white mb-3">Lab Procedure</h3>
               <ul className="space-y-2 text-gray-300">
                 {[
                   `You have ${quiz.duration} minutes to complete the quiz`,
@@ -274,7 +274,7 @@ export default function QuizDetail() {
 
             <div className="flex gap-4">
               <button onClick={handleStartQuiz} className="btn-primary flex-1 py-4 text-lg flex items-center justify-center">
-                <Play className="w-6 h-6 mr-3" />Start Quiz
+                <Play className="w-6 h-6 mr-3" />Begin Experiment
               </button>
               {user?.role === 'teacher' && (
                 <Link href={`/quiz-analytics/${id}`} className="px-6 py-4 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors flex items-center">
@@ -383,7 +383,7 @@ export default function QuizDetail() {
                 disabled={answers[currentQuestion] === undefined}
                 className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center ${answers[currentQuestion] === undefined ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'btn-primary'}`}
               >
-                {currentQuestion === quiz.questions.length - 1 ? 'Submit Quiz' : 'Next'}
+                {currentQuestion === quiz.questions.length - 1 ? 'Submit Experiment' : 'Next'}
                 {currentQuestion === quiz.questions.length - 1 && <CheckCircle className="w-5 h-5 ml-2" />}
               </button>
             </div>
@@ -407,7 +407,7 @@ export default function QuizDetail() {
                 <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold text-white mb-4">{results.message}</h1>
                 <button onClick={() => router.push('/quizzes')} className="btn-primary mt-4">
-                  Back to Quizzes
+                  Back to Lab Tests
                 </button>
               </>
             ) : (
@@ -416,34 +416,34 @@ export default function QuizDetail() {
                   {passed ? <CheckCircle className="w-12 h-12 text-green-400" /> : <XCircle className="w-12 h-12 text-red-400" />}
                 </div>
 
-                <h1 className="text-3xl font-bold text-white mb-2">{passed ? 'Congratulations!' : 'Quiz Completed'}</h1>
-                <p className="text-gray-300 text-lg mb-8">{passed ? "You've successfully passed the quiz!" : 'Keep practicing and try again!'}</p>
+                <h1 className="text-3xl font-bold text-white mb-2">{passed ? 'Eureka!' : 'Experiment Complete'}</h1>
+                <p className="text-gray-300 text-lg mb-8">{passed ? "You've achieved optimal yield!" : 'Refine your formula and try again!'}</p>
 
                 <div className="grid grid-cols-3 gap-6 mb-8">
                   <div className="bg-white/5 rounded-lg p-6">
                     <p className="text-3xl font-bold text-white mb-2">{results.correctAnswers}/{results.totalQuestions}</p>
-                    <p className="text-gray-400">Correct Answers</p>
+                    <p className="text-gray-400">Correct Compounds</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-6">
                     <p className={`text-3xl font-bold mb-2 ${passed ? 'text-green-400' : 'text-red-400'}`}>{percentage}%</p>
-                    <p className="text-gray-400">Score</p>
+                    <p className="text-gray-400">Yield</p>
                   </div>
                   <div className="bg-white/5 rounded-lg p-6">
                     <p className="text-3xl font-bold text-white mb-2">{formatTime(results.timeSpent)}</p>
-                    <p className="text-gray-400">Time Taken</p>
+                    <p className="text-gray-400">Reaction Time</p>
                   </div>
                 </div>
 
                 {passed && (
                   <div className="flex items-center justify-center mb-8">
                     <Award className="w-6 h-6 text-yellow-400 mr-2" />
-                    <span className="text-yellow-400 font-medium">Chemistry Expert Badge Earned!</span>
+                    <span className="text-yellow-400 font-medium">Lab Expert Badge Earned!</span>
                   </div>
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button onClick={() => router.push('/quizzes')} className="btn-secondary">Back to Quizzes</button>
-                  <button onClick={() => router.push('/dashboard')} className="btn-primary">View Dashboard</button>
+                  <button onClick={() => router.push('/quizzes')} className="btn-secondary">Back to Lab Tests</button>
+                  <button onClick={() => router.push('/dashboard')} className="btn-primary">Return to Lab</button>
                 </div>
               </>
             )}

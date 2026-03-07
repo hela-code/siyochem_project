@@ -79,13 +79,13 @@ export default function Topics() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Chemistry Topics</h1>
-            <p className="text-gray-300">Join discussions and share knowledge with fellow chemistry enthusiasts</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Chemistry Experiments</h1>
+            <p className="text-gray-300">Join experiments and share knowledge with fellow chemistry enthusiasts</p>
           </div>
           {isAuthenticated && (
             <Link href="/create-topic" className="btn-primary mt-4 md:mt-0 inline-flex items-center">
               <PlusCircle className="w-5 h-5 mr-2" />
-              Create Topic
+              Start Experiment
             </Link>
           )}
         </div>
@@ -95,7 +95,7 @@ export default function Topics() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search topics..."
+              placeholder="Search experiments..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1) }}
               className="input-field pl-10"
@@ -212,15 +212,15 @@ export default function Topics() {
           {topics.length === 0 && !loading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
               <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No topics found</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">No experiments found</h3>
               <p className="text-gray-300 mb-6">
                 {searchTerm || selectedCategory !== 'all'
                   ? 'Try adjusting your search or filter criteria'
-                  : 'Be the first to start a discussion!'}
+                  : 'Be the first to start a reaction!'}
               </p>
               {isAuthenticated && !searchTerm && selectedCategory === 'all' && (
                 <Link href="/create-topic" className="btn-primary inline-flex items-center">
-                  <PlusCircle className="w-5 h-5 mr-2" /> Create First Topic
+                  <PlusCircle className="w-5 h-5 mr-2" /> Start First Experiment
                 </Link>
               )}
             </motion.div>

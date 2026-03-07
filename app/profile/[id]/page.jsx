@@ -280,7 +280,7 @@ export default function Profile() {
           <h2 className="text-2xl font-bold text-white mb-2">User Not Found</h2>
           <p className="text-gray-400 mb-6">This profile doesn&apos;t exist or has been removed.</p>
           <button onClick={() => router.push('/')} className="btn-primary px-6 py-2">
-            Go Home
+            Go to Lab
           </button>
         </div>
       </div>
@@ -289,8 +289,8 @@ export default function Profile() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: User },
-    { id: 'activity', label: 'Activity', icon: TrendingUp },
-    ...(isOwnProfile ? [{ id: 'quizzes', label: 'My Quizzes', icon: Brain }] : []),
+    { id: 'activity', label: 'Reactions', icon: TrendingUp },
+    ...(isOwnProfile ? [{ id: 'quizzes', label: 'My Experiments', icon: Brain }] : []),
     { id: 'about', label: 'About', icon: FileText },
   ]
 
@@ -377,7 +377,7 @@ export default function Profile() {
                       className="btn-primary flex items-center gap-2 px-5 py-2.5 text-sm shrink-0"
                     >
                       <Edit className="w-4 h-4" />
-                      Edit Profile
+                      Edit Element Card
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
@@ -386,7 +386,7 @@ export default function Profile() {
                       className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20 hover:text-white transition-all duration-300 shrink-0"
                     >
                       <TrendingUp className="w-4 h-4" />
-                      Dashboard
+                      Lab Dashboard
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
@@ -453,9 +453,9 @@ export default function Profile() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { icon: Link2, value: isOwnProfile ? (outgoingBondCount || 0) : (bondCount || 0), label: isOwnProfile ? 'My Bonds' : 'Bonds', color: 'text-cyan-400', clickable: true },
-              { icon: BookOpen, value: user.stats?.postsCount || 0, label: 'Posts', color: 'text-blue-400' },
-              { icon: Brain, value: user.stats?.quizzesTaken || 0, label: 'Quizzes', color: 'text-purple-400' },
-              { icon: Award, value: `${user.stats?.averageScore || 0}%`, label: 'Avg Score', color: 'text-yellow-400' },
+              { icon: BookOpen, value: user.stats?.postsCount || 0, label: 'Reactions', color: 'text-blue-400' },
+              { icon: Brain, value: user.stats?.quizzesTaken || 0, label: 'Experiments', color: 'text-purple-400' },
+              { icon: Award, value: `${user.stats?.averageScore || 0}%`, label: 'Avg Yield', color: 'text-yellow-400' },
             ].map(({ icon: Icon, value, label, color, clickable }) => (
               <div
                 key={label}
@@ -516,7 +516,7 @@ export default function Profile() {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                   <Edit className="w-5 h-5 text-primary-400" />
-                  Edit Profile
+                  Edit Element Card
                 </h2>
                 <button onClick={() => setIsEditing(false)} className="text-gray-400 hover:text-white">
                   <X className="w-5 h-5" />
@@ -800,13 +800,13 @@ export default function Profile() {
               <div className="lg:col-span-2 space-y-6">
                 <div className="glass-card p-6 rounded-xl">
                   <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-primary-400" /> Recent Activity
+                    <TrendingUp className="w-5 h-5 text-primary-400" /> Recent Reactions
                   </h3>
 
                   {activities.length === 0 ? (
                     <div className="text-center py-12">
                       <BookOpen className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                      <p className="text-gray-400">No activity yet</p>
+                      <p className="text-gray-400">No reactions yet</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -956,15 +956,15 @@ export default function Profile() {
             >
               <div className="glass-card p-6 rounded-xl">
                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-400" /> My Quiz Results
+                  <Brain className="w-5 h-5 text-purple-400" /> My Experiment Results
                 </h3>
 
                 {quizResults.length === 0 ? (
                   <div className="text-center py-12">
                     <Brain className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400 mb-2">No quizzes taken yet</p>
+                    <p className="text-gray-400 mb-2">No experiments attempted yet</p>
                     <button onClick={() => router.push('/quizzes')} className="btn-primary text-sm px-4 py-2 mt-2">
-                      Browse Quizzes
+                      Browse Lab Tests
                     </button>
                   </div>
                 ) : (
@@ -987,14 +987,14 @@ export default function Profile() {
                           <p className="text-white font-medium text-sm truncate">{result.title}</p>
                           <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                             <span className="capitalize">{result.category}</span>
-                            <span>{result.totalQuestions} questions</span>
+                            <span>{result.totalQuestions} compounds</span>
                             <span>{timeAgo(result.attemptedAt)}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           {result.passed ? <CheckCircle className="w-5 h-5 text-green-400" /> : <XCircle className="w-5 h-5 text-red-400" />}
                           <span className={`text-xs font-medium ${result.passed ? 'text-green-400' : 'text-red-400'}`}>
-                            {result.passed ? 'Passed' : 'Failed'}
+                            {result.passed ? 'Yielded' : 'No Yield'}
                           </span>
                         </div>
                       </motion.div>
