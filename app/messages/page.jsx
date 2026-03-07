@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -18,7 +18,7 @@ import {
 import { useAuthStore } from '@/stores/authStore'
 import axios from 'axios'
 
-export default function MessagesPage() {
+function MessagesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const chatWith = searchParams.get('chat')
@@ -523,5 +523,13 @@ export default function MessagesPage() {
         </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-dark-950 flex items-center justify-center"><Loader2 className="w-8 h-8 text-primary-400 animate-spin" /></div>}>
+      <MessagesContent />
+    </Suspense>
   )
 }
