@@ -1,13 +1,7 @@
 {
   "/create-topic/page": "app/create-topic/page.js",
-  "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/topics/[id]/route": "app/api/topics/[id]/route.js",
-  "/api/topics/route": "app/api/topics/route.js",
-  "/page": "app/page.js",
-  "/api/feedback/route": "app/api/feedback/route.js",
-  "/topics/page": "app/topics/page.js",
-  "/api/quizzes/route": "app/api/quizzes/route.js",
   "/topics/[id]/page": "app/topics/[id]/page.js",
+  "/page": "app/page.js",
   "/feedback/page": "app/feedback/page.js",
   "/quizzes/page": "app/quizzes/page.js"
 }

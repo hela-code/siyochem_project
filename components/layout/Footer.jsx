@@ -167,6 +167,12 @@ const Footer = () => {
             <p className="text-gray-300 text-sm">
               © {currentYear} Chem Hub. All rights reserved.
             </p>
+            <p className="text-gray-500 text-xs mt-1">
+              Powered by{' '}
+              <a href="https://github.com/hela-code" target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:text-primary-300 transition-colors font-medium">
+                HelaCode
+              </a>
+            </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link
                 href="#"
