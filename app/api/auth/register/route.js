@@ -39,9 +39,9 @@ export async function POST(request) {
       )
     }
 
-    // Check if user already exists
+    // Check if user already exists (case-insensitive email check)
     const existing = await sql`
-      SELECT id FROM users WHERE email = ${email} OR username = ${username} LIMIT 1
+      SELECT id FROM users WHERE LOWER(email) = ${email.toLowerCase()} OR LOWER(username) = ${username.toLowerCase()} LIMIT 1
     `
     if (existing.length > 0) {
       return NextResponse.json(
@@ -54,10 +54,10 @@ export async function POST(request) {
     const salt = await bcrypt.genSalt(12)
     const hashedPassword = await bcrypt.hash(password, salt)
 
-    // Create new user
+    // Create new user (store email lowercased for consistency)
     const newUsers = await sql`
       INSERT INTO users (username, email, password, role, first_name, last_name, school, grade)
-      VALUES (${username}, ${email}, ${hashedPassword}, ${role}, ${firstName}, ${lastName}, ${school || null}, ${grade || null})
+      VALUES (${username}, ${email.toLowerCase()}, ${hashedPassword}, ${role}, ${firstName}, ${lastName}, ${school || null}, ${grade || null})
       RETURNING id, username, email, role, first_name, last_name, school, grade
     `
     const user = newUsers[0]

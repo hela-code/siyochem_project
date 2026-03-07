@@ -221,7 +221,7 @@ const Navbar = () => {
                 <div className="hidden md:flex items-center space-x-4">
                   <Link
                     href="/login"
-                    className="text-gray-300 hover:text-white transition-colors duration-200"
+                    className="inline-block text-gray-300 hover:text-white transition-colors duration-200 cursor-pointer py-2 px-3"
                   >
                     Enter Lab
                   </Link>
@@ -317,14 +317,14 @@ const Navbar = () => {
                   <Link
                     href="/login"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 cursor-pointer"
                   >
                     <span>Enter Lab</span>
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-2 w-full px-3 py-2 btn-primary rounded-lg"
+                    className="flex items-center space-x-2 w-full px-3 py-2 btn-primary rounded-lg cursor-pointer"
                   >
                     <span>Join the Lab</span>
                   </Link>

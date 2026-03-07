@@ -545,7 +545,7 @@ export default function TopicDetail() {
           className="glass-card p-6 rounded-xl mb-6 text-center"
         >
           <p className="text-gray-400 mb-3">Enter the lab to join the reaction</p>
-          <button onClick={() => router.push('/login')} className="btn-primary px-6 py-2">
+          <button onClick={() => router.push('/login')} className="btn-primary px-6 py-2 cursor-pointer">
             Enter the Lab
           </button>
         </motion.div>
