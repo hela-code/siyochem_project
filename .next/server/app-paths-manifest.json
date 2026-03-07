@@ -1,7 +1,17 @@
 {
-  "/topics/page": "app/topics/page.js",
-  "/register/page": "app/register/page.js",
-  "/quizzes/[id]/page": "app/quizzes/[id]/page.js",
+  "/profile/[id]/page": "app/profile/[id]/page.js",
   "/page": "app/page.js",
-  "/feedback/page": "app/feedback/page.js"
+  "/api/topics/route": "app/api/topics/route.js",
+  "/topics/page": "app/topics/page.js",
+  "/api/users/[id]/activity/route": "app/api/users/[id]/activity/route.js",
+  "/api/users/[id]/route": "app/api/users/[id]/route.js",
+  "/api/users/[id]/quizzes/route": "app/api/users/[id]/quizzes/route.js",
+  "/create-topic/page": "app/create-topic/page.js",
+  "/topics/[id]/page": "app/topics/[id]/page.js",
+  "/api/topics/[id]/route": "app/api/topics/[id]/route.js",
+  "/feedback/page": "app/feedback/page.js",
+  "/api/feedback/route": "app/api/feedback/route.js",
+  "/quizzes/page": "app/quizzes/page.js",
+  "/api/quizzes/route": "app/api/quizzes/route.js",
+  "/api/topics/[id]/like/route": "app/api/topics/[id]/like/route.js"
 }

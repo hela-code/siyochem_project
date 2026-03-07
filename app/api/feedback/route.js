@@ -1,19 +1,42 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Feedback from '@/models/Feedback'
-import User from '@/models/User'
-import { requireAuth } from '@/lib/auth'
+import { getSQL } from '@/lib/neon'
+import { requireAuth, extractToken, verifyToken } from '@/lib/auth'
 
-// GET /api/feedback — list all feedback
-export async function GET() {
+export const dynamic = 'force-dynamic'
+
+// GET /api/feedback — list all feedback with reaction counts
+export async function GET(request) {
   try {
-    await connectDB()
+    const sql = getSQL()
 
-    const feedbacks = await Feedback.find({ isActive: true })
-      .sort({ createdAt: -1 })
-      .lean()
+    // Check if user is logged in to get their reactions
+    const token = extractToken(request)
+    const decoded = token ? verifyToken(token) : null
 
-    return NextResponse.json({ success: true, feedbacks })
+    const feedbacks = await sql`
+      SELECT f.*,
+        (SELECT COUNT(*) FROM feedback_reactions WHERE feedback_id = f.id) as reaction_count
+      FROM feedbacks f
+      WHERE f.is_active = true
+      ORDER BY f.created_at DESC
+    `
+
+    // If user is logged in, get their reactions
+    let userReactions = []
+    if (decoded) {
+      userReactions = await sql`
+        SELECT feedback_id FROM feedback_reactions WHERE user_id = ${decoded.userId}
+      `
+    }
+    const userReactedSet = new Set(userReactions.map((r) => r.feedback_id))
+
+    const formatted = feedbacks.map((fb) => ({
+      ...fb,
+      reaction_count: parseInt(fb.reaction_count),
+      user_reacted: userReactedSet.has(fb.id),
+    }))
+
+    return NextResponse.json({ success: true, feedbacks: formatted })
   } catch (error) {
     return NextResponse.json(
       { success: false, message: error.message },
@@ -28,8 +51,7 @@ export async function POST(request) {
     const auth = requireAuth(request)
     if (auth.error) return auth.error
 
-    await connectDB()
-
+    const sql = getSQL()
     const { content } = await request.json()
 
     if (!content || !content.trim()) {
@@ -40,16 +62,19 @@ export async function POST(request) {
     }
 
     // Look up user to get firstName
-    const user = await User.findById(auth.decoded.userId).select('profile.firstName username')
-    const authorName = user?.profile?.firstName || user?.username || 'Anonymous'
+    const users = await sql`
+      SELECT first_name, username FROM users WHERE id = ${auth.decoded.userId}
+    `
+    const user = users[0]
+    const authorName = user?.first_name || user?.username || 'Anonymous'
 
-    const feedback = await Feedback.create({
-      content: content.trim(),
-      authorName,
-      author: auth.decoded.userId,
-    })
+    const result = await sql`
+      INSERT INTO feedbacks (content, author_name, author_id)
+      VALUES (${content.trim()}, ${authorName}, ${auth.decoded.userId})
+      RETURNING *
+    `
 
-    return NextResponse.json({ success: true, feedback }, { status: 201 })
+    return NextResponse.json({ success: true, feedback: result[0] }, { status: 201 })
   } catch (error) {
     return NextResponse.json(
       { success: false, message: error.message },

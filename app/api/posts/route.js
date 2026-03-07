@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Post from '@/models/Post'
-import Topic from '@/models/Topic'
-import User from '@/models/User'
+import { getSQL } from '@/lib/neon'
 import { requireAuth } from '@/lib/auth'
 
 // POST /api/posts  — create a new post
@@ -11,7 +8,7 @@ export async function POST(request) {
   if (error) return error
 
   try {
-    await connectDB()
+    const sql = getSQL()
 
     const body = await request.json()
     const { content, topicId, images, chemicalEquations } = body
@@ -23,25 +20,45 @@ export async function POST(request) {
       )
     }
 
-    const post = new Post({
-      content,
-      author: decoded.userId,
-      topic: topicId,
-      images: images || [],
-      chemicalEquations: chemicalEquations || [],
-    })
+    const result = await sql`
+      INSERT INTO posts (content, author_id, topic_id, images, chemical_equations)
+      VALUES (
+        ${content},
+        ${decoded.userId},
+        ${topicId},
+        ${images || []},
+        ${JSON.stringify(chemicalEquations || [])}
+      )
+      RETURNING *
+    `
+    const post = result[0]
 
-    await post.save()
-    await post.populate('author', 'username profile.firstName profile.lastName profile.avatar')
-
-    // Update topic's posts array
-    await Topic.findByIdAndUpdate(topicId, { $push: { posts: post._id } })
+    // Fetch author info
+    const authors = await sql`
+      SELECT id, username, first_name, last_name, avatar
+      FROM users WHERE id = ${decoded.userId}
+    `
 
     // Update user's posts count
-    await User.findByIdAndUpdate(decoded.userId, { $inc: { 'stats.postsCount': 1 } })
+    await sql`UPDATE users SET posts_count = posts_count + 1 WHERE id = ${decoded.userId}`
+
+    const postWithAuthor = {
+      ...post,
+      author: authors[0]
+        ? {
+            _id: authors[0].id,
+            username: authors[0].username,
+            profile: {
+              firstName: authors[0].first_name,
+              lastName: authors[0].last_name,
+              avatar: authors[0].avatar,
+            },
+          }
+        : null,
+    }
 
     return NextResponse.json(
-      { success: true, message: 'Post created successfully', post },
+      { success: true, message: 'Post created successfully', post: postWithAuthor },
       { status: 201 }
     )
   } catch (error) {

@@ -1,50 +1,61 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Post from '@/models/Post'
-import Topic from '@/models/Topic'
+import { getSQL } from '@/lib/neon'
+
+export const dynamic = 'force-dynamic'
 
 // GET /api/users/[id]/activity
 export async function GET(request, { params }) {
   try {
-    await connectDB()
+    const sql = getSQL()
 
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page')) || 1
     const limit = parseInt(searchParams.get('limit')) || 10
-    const skip = (page - 1) * limit
+    const offset = (page - 1) * limit
 
     const [posts, topics] = await Promise.all([
-      Post.find({ author: params.id, isActive: true })
-        .populate('topic', 'title')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-      Topic.find({ author: params.id, isActive: true })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
+      sql`
+        SELECT p.*,
+          t.title as topic_title, t.id as topic_uid,
+          (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
+          (SELECT COUNT(*) FROM comments WHERE post_id = p.id AND is_active = true) as comments_count
+        FROM posts p
+        LEFT JOIN topics t ON p.topic_id = t.id
+        WHERE p.author_id = ${params.id} AND p.is_active = true
+        ORDER BY p.created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `,
+      sql`
+        SELECT t.*,
+          (SELECT COUNT(*) FROM topic_likes WHERE topic_id = t.id) as likes_count,
+          (SELECT COUNT(*) FROM posts WHERE topic_id = t.id AND is_active = true) as posts_count
+        FROM topics t
+        WHERE t.author_id = ${params.id} AND t.is_active = true
+        ORDER BY t.created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `,
     ])
 
     const activities = [
-      ...posts.map((post) => ({
+      ...posts.map((p) => ({
         type: 'post',
-        id: post._id,
-        content: post.content,
-        topic: post.topic,
-        likesCount: post.likes.length,
-        commentsCount: post.comments.length,
-        createdAt: post.createdAt,
+        id: p.id,
+        content: p.content,
+        topic: p.topic_uid ? { _id: p.topic_uid, title: p.topic_title } : null,
+        likesCount: parseInt(p.likes_count),
+        commentsCount: parseInt(p.comments_count),
+        createdAt: p.created_at,
       })),
-      ...topics.map((topic) => ({
+      ...topics.map((t) => ({
         type: 'topic',
-        id: topic._id,
-        title: topic.title,
-        description: topic.description,
-        category: topic.category,
-        likesCount: topic.likes.length,
-        postsCount: topic.posts.length,
-        views: topic.views,
-        createdAt: topic.createdAt,
+        id: t.id,
+        title: t.title,
+        description: t.description,
+        category: t.category,
+        likesCount: parseInt(t.likes_count),
+        postsCount: parseInt(t.posts_count),
+        views: t.views,
+        createdAt: t.created_at,
       })),
     ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 

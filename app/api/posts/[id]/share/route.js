@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import connectDB from '@/lib/mongodb'
-import Post from '@/models/Post'
+import { getSQL } from '@/lib/neon'
 import { requireAuth } from '@/lib/auth'
 
 // POST /api/posts/[id]/share
@@ -9,7 +8,7 @@ export async function POST(request, { params }) {
   if (error) return error
 
   try {
-    await connectDB()
+    const sql = getSQL()
 
     const body = await request.json()
     const { platform } = body
@@ -21,21 +20,25 @@ export async function POST(request, { params }) {
       )
     }
 
-    const post = await Post.findById(params.id)
-    if (!post) {
+    const posts = await sql`SELECT id FROM posts WHERE id = ${params.id}`
+    if (posts.length === 0) {
       return NextResponse.json(
         { success: false, message: 'Post not found' },
         { status: 404 }
       )
     }
 
-    post.shares.push({ user: decoded.userId, platform })
-    await post.save()
+    await sql`
+      INSERT INTO post_shares (post_id, user_id, platform)
+      VALUES (${params.id}, ${decoded.userId}, ${platform})
+    `
+
+    const countResult = await sql`SELECT COUNT(*) as count FROM post_shares WHERE post_id = ${params.id}`
 
     return NextResponse.json({
       success: true,
       message: 'Post shared successfully',
-      sharesCount: post.shares.length,
+      sharesCount: parseInt(countResult[0].count),
     })
   } catch (error) {
     console.error('Share post error:', error)

@@ -12,7 +12,7 @@ const difficulties = ['easy', 'medium', 'hard']
 
 export default function CreateQuiz() {
   const router = useRouter()
-  const { user, isAuthenticated, loading } = useAuthStore()
+  const { user, isAuthenticated, loading, token } = useAuthStore()
   const [quizData, setQuizData] = useState({
     title: '',
     description: '',
@@ -71,7 +71,7 @@ export default function CreateQuiz() {
     try {
       const res = await fetch('/api/quizzes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(quizData),
       })
       if (res.ok) {

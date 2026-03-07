@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import connectDB from '@/lib/mongodb'
-import User from '@/models/User'
+import { getSQL } from '@/lib/neon'
 import { signToken } from '@/lib/auth'
 
 export async function POST(request) {
   try {
-    await connectDB()
+    const sql = getSQL()
 
     const body = await request.json()
     const { email, password } = body
@@ -19,7 +18,8 @@ export async function POST(request) {
     }
 
     // Find user
-    const user = await User.findOne({ email: email.toLowerCase() })
+    const users = await sql`SELECT * FROM users WHERE email = ${email.toLowerCase()}`
+    const user = users[0]
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
@@ -37,22 +37,42 @@ export async function POST(request) {
     }
 
     // Update last login
-    user.lastLogin = new Date()
-    await user.save()
+    await sql`UPDATE users SET last_login = NOW() WHERE id = ${user.id}`
 
-    const token = signToken({ userId: user._id, role: user.role })
+    const token = signToken({ userId: user.id, role: user.role })
 
     return NextResponse.json({
       success: true,
       message: 'Login successful',
       token,
       user: {
-        id: user._id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role,
-        profile: user.profile,
-        stats: user.stats,
+        profile: {
+          firstName: user.first_name,
+          lastName: user.last_name,
+          bio: user.bio,
+          avatar: user.avatar,
+          school: user.school,
+          grade: user.grade,
+        },
+        stats: {
+          postsCount: user.posts_count,
+          likesReceived: user.likes_received,
+          quizzesTaken: user.quizzes_taken,
+          averageScore: user.average_score,
+        },
+        socialLinks: {
+          twitter: user.twitter,
+          linkedin: user.linkedin,
+          instagram: user.instagram,
+        },
+        isActive: user.is_active,
+        lastLogin: user.last_login,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at,
       },
     })
   } catch (error) {

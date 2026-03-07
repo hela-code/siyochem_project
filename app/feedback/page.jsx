@@ -9,9 +9,13 @@ import {
   X,
   User,
   Clock,
+  FlaskConical,
+  Flame,
+  Trophy,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import axios from 'axios'
+import Link from 'next/link'
 
 export default function FeedbackPage() {
   const { user, isAuthenticated, token } = useAuthStore()
@@ -20,6 +24,7 @@ export default function FeedbackPage() {
   const [showForm, setShowForm] = useState(false)
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [reactingId, setReactingId] = useState(null)
 
   useEffect(() => {
     fetchFeedbacks()
@@ -27,7 +32,11 @@ export default function FeedbackPage() {
 
   const fetchFeedbacks = async () => {
     try {
-      const res = await axios.get('/api/feedback')
+      const headers = {}
+      const storedToken = token || localStorage.getItem('token')
+      if (storedToken) headers.Authorization = `Bearer ${storedToken}`
+
+      const res = await axios.get('/api/feedback', { headers })
       if (res.data.success) {
         setFeedbacks(res.data.feedbacks)
       }
@@ -50,7 +59,7 @@ export default function FeedbackPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       if (res.data.success) {
-        setFeedbacks([res.data.feedback, ...feedbacks])
+        setFeedbacks([{ ...res.data.feedback, reaction_count: 0, user_reacted: false }, ...feedbacks])
         setContent('')
         setShowForm(false)
       }
@@ -58,6 +67,32 @@ export default function FeedbackPage() {
       console.error('Failed to submit feedback', err)
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleReact = async (feedbackId) => {
+    if (!isAuthenticated || reactingId) return
+    setReactingId(feedbackId)
+
+    try {
+      const res = await axios.post(
+        '/api/feedback/react',
+        { feedbackId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      if (res.data.success) {
+        setFeedbacks((prev) =>
+          prev.map((fb) =>
+            (fb.id || fb._id) === feedbackId
+              ? { ...fb, reaction_count: res.data.reactionCount, user_reacted: res.data.reacted }
+              : fb
+          )
+        )
+      }
+    } catch (err) {
+      console.error('Failed to react', err)
+    } finally {
+      setReactingId(null)
     }
   }
 
@@ -75,8 +110,7 @@ export default function FeedbackPage() {
     return date.toLocaleDateString()
   }
 
-  // Generate a consistent color from the author name
-  const getAvatarColor = (name) => {
+  const getAvatarColor = (name = 'Unknown') => {
     const colors = [
       'from-primary-500 to-primary-600',
       'from-blue-500 to-blue-600',
@@ -93,6 +127,13 @@ export default function FeedbackPage() {
     }
     return colors[Math.abs(hash) % colors.length]
   }
+
+  // Find the top catalyzed feedback
+  const topFeedback =
+    feedbacks.length > 0
+      ? feedbacks.reduce((top, fb) => ((fb.reaction_count || 0) > (top.reaction_count || 0) ? fb : top), feedbacks[0])
+      : null
+  const hasTopFeedback = topFeedback && (topFeedback.reaction_count || 0) > 0
 
   return (
     <div className="min-h-screen">
@@ -193,46 +234,149 @@ export default function FeedbackPage() {
         </div>
       )}
 
+      {/* Top Catalyzed Feedback */}
+      {!loading && hasTopFeedback && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="w-5 h-5 text-yellow-400" />
+            <h2 className="text-lg font-semibold text-yellow-400">Most Catalyzed Feedback</h2>
+          </div>
+          <div className="relative">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-500/30 via-orange-500/30 to-yellow-500/30 rounded-xl blur-sm" />
+            <div className="relative glass-card p-6 rounded-xl border border-yellow-500/30">
+              <div className="flex items-center gap-3 mb-4">
+                <Link href={`/profile/${topFeedback.author_id}`}>
+                  <div
+                    className={`w-12 h-12 bg-gradient-to-br ${getAvatarColor(
+                      topFeedback.author_name || topFeedback.authorName
+                    )} rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:ring-2 hover:ring-yellow-400 transition-all`}
+                  >
+                    <span className="text-white font-bold">
+                      {(topFeedback.author_name || topFeedback.authorName)?.[0]?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                </Link>
+                <div className="flex-1 min-w-0">
+                  <Link href={`/profile/${topFeedback.author_id}`} className="text-white font-semibold hover:text-yellow-400 transition-colors block text-lg">
+                    {topFeedback.author_name || topFeedback.authorName}
+                  </Link>
+                  <div className="flex items-center text-gray-400 text-xs">
+                    <Clock className="w-3 h-3 mr-1" />
+                    {formatDate(topFeedback.created_at || topFeedback.createdAt)}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-yellow-500/20 px-4 py-2 rounded-full border border-yellow-500/30">
+                  <FlaskConical className="w-5 h-5 text-yellow-400" />
+                  <span className="text-yellow-400 font-bold text-lg">{topFeedback.reaction_count}</span>
+                </div>
+              </div>
+              <p className="text-gray-200 leading-relaxed whitespace-pre-wrap break-words text-base">
+                {topFeedback.content}
+              </p>
+
+              <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                <button
+                  onClick={() => handleReact(topFeedback.id || topFeedback._id)}
+                  disabled={!isAuthenticated || reactingId === (topFeedback.id || topFeedback._id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    topFeedback.user_reacted
+                      ? 'bg-yellow-500/30 text-yellow-300 border border-yellow-500/50 shadow-lg shadow-yellow-500/10'
+                      : 'bg-white/5 text-gray-400 hover:bg-yellow-500/20 hover:text-yellow-400 border border-white/10 hover:border-yellow-500/30'
+                  } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <FlaskConical className={`w-4 h-4 ${topFeedback.user_reacted ? 'animate-pulse' : ''}`} />
+                  {topFeedback.user_reacted ? 'Catalyzed!' : 'Catalyze'}
+                </button>
+                <span className="text-gray-500 text-xs flex items-center gap-1">
+                  <Flame className="w-3 h-3 text-yellow-500" /> Top reaction
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Feedback Grid / Wall */}
       {!loading && feedbacks.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {feedbacks.map((fb, index) => (
-            <motion.div
-              key={fb._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.08 }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="glass-card p-6 rounded-xl card-hover"
-            >
-              {/* Author */}
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className={`w-10 h-10 bg-gradient-to-br ${getAvatarColor(
-                    fb.authorName
-                  )} rounded-full flex items-center justify-center shadow-lg`}
-                >
-                  <span className="text-white font-bold text-sm">
-                    {fb.authorName?.[0]?.toUpperCase() || 'U'}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-medium truncate">
-                    {fb.authorName}
-                  </p>
-                  <div className="flex items-center text-gray-400 text-xs">
-                    <Clock className="w-3 h-3 mr-1" />
-                    {formatDate(fb.createdAt)}
+          {feedbacks.map((fb, index) => {
+            const fbId = fb.id || fb._id
+            const isTop = hasTopFeedback && fbId === (topFeedback.id || topFeedback._id)
+
+            return (
+              <motion.div
+                key={fbId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
+                whileHover={{ y: -5, scale: 1.02 }}
+                className={`glass-card p-6 rounded-xl card-hover ${isTop ? 'ring-1 ring-yellow-500/30' : ''}`}
+              >
+                {/* Top badge */}
+                {isTop && (
+                  <div className="flex items-center gap-1 mb-3 text-yellow-400 text-xs font-medium">
+                    <Trophy className="w-3 h-3" />
+                    <span>Most Catalyzed</span>
+                  </div>
+                )}
+
+                {/* Author */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Link href={`/profile/${fb.author_id}`}>
+                    <div
+                      className={`w-10 h-10 bg-gradient-to-br ${getAvatarColor(
+                        fb.author_name || fb.authorName
+                      )} rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:ring-2 hover:ring-primary-400 transition-all`}
+                    >
+                      <span className="text-white font-bold text-sm">
+                        {(fb.author_name || fb.authorName)?.[0]?.toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/profile/${fb.author_id}`} className="text-white font-medium truncate hover:text-primary-400 transition-colors block">
+                      {fb.author_name || fb.authorName}
+                    </Link>
+                    <div className="flex items-center text-gray-400 text-xs">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {formatDate(fb.created_at || fb.createdAt)}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Content */}
-              <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                {fb.content}
-              </p>
-            </motion.div>
-          ))}
+                {/* Content */}
+                <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words mb-4">
+                  {fb.content}
+                </p>
+
+                {/* Catalyze Button */}
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                  <button
+                    onClick={() => handleReact(fbId)}
+                    disabled={!isAuthenticated || reactingId === fbId}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${
+                      fb.user_reacted
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        : 'bg-white/5 text-gray-400 hover:bg-emerald-500/15 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/30'
+                    } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <FlaskConical className={`w-3.5 h-3.5 ${reactingId === fbId ? 'animate-spin' : fb.user_reacted ? 'animate-pulse' : ''}`} />
+                    {fb.user_reacted ? 'Catalyzed!' : 'Catalyze'}
+                  </button>
+                  {(fb.reaction_count || 0) > 0 && (
+                    <span className="text-gray-500 text-xs flex items-center gap-1">
+                      <FlaskConical className="w-3 h-3 text-emerald-500" />
+                      {fb.reaction_count} {fb.reaction_count === 1 ? 'reaction' : 'reactions'}
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            )
+          })}
         </div>
       )}
 
