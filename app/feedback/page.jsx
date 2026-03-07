@@ -146,10 +146,10 @@ export default function FeedbackPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Feedback Wall
+              Reaction Wall
             </h1>
             <p className="text-gray-300">
-              Share your thoughts and read feedback from fellow chemistry enthusiasts
+              Share your reactions and read feedback from fellow lab partners
             </p>
           </div>
           {isAuthenticated && (
@@ -165,7 +165,7 @@ export default function FeedbackPage() {
               ) : (
                 <>
                   <PlusCircle className="w-5 h-5 mr-2" />
-                  Add Feedback
+                  Add Reaction
                 </>
               )}
             </button>
@@ -202,7 +202,7 @@ export default function FeedbackPage() {
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Write your feedback here..."
+                  placeholder="Share your reaction here..."
                   rows={4}
                   maxLength={1000}
                   className="input-field resize-none mb-4"
@@ -218,7 +218,7 @@ export default function FeedbackPage() {
                     className="btn-primary inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    {submitting ? 'Submitting...' : 'Submit Feedback'}
+                    {submitting ? 'Reacting...' : 'Submit Reaction'}
                   </button>
                 </div>
               </form>
@@ -389,10 +389,10 @@ export default function FeedbackPage() {
         >
           <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">
-            No feedback yet
+            No reactions yet
           </h3>
           <p className="text-gray-300 mb-6">
-            Be the first to share your feedback!
+            Be the first to share your reaction!
           </p>
           {isAuthenticated && (
             <button
@@ -400,7 +400,7 @@ export default function FeedbackPage() {
               className="btn-primary inline-flex items-center"
             >
               <PlusCircle className="w-5 h-5 mr-2" />
-              Add Feedback
+              Add Reaction
             </button>
           )}
         </motion.div>

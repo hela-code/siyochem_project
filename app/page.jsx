@@ -25,35 +25,35 @@ export default function Home() {
   const features = [
     {
       icon: BookOpen,
-      title: 'Discussion Topics',
-      description: 'Create and participate in chemistry discussions with fellow students',
+      title: 'Lab Experiments',
+      description: 'Create and participate in chemistry experiments with fellow lab partners',
       color: 'from-blue-500 to-blue-600',
     },
     {
       icon: Brain,
-      title: 'MCQ Quizzes',
-      description: 'Test your knowledge with comprehensive quizzes and instant feedback',
+      title: 'Lab Tests',
+      description: 'Test your compounds with comprehensive lab tests and instant analysis',
       color: 'from-green-500 to-green-600',
     },
     {
       icon: Users,
-      title: 'Social Learning',
-      description: 'Connect with A/L chemistry students and teachers across Sri Lanka',
+      title: 'Molecular Network',
+      description: 'Bond with A/L chemistry students and catalysts across Sri Lanka',
       color: 'from-purple-500 to-purple-600',
     },
     {
       icon: TrendingUp,
-      title: 'Progress Analytics',
-      description: 'Track your performance and improve with detailed analytics',
+      title: 'Reaction Progress',
+      description: 'Track your yield and improve with detailed lab analytics',
       color: 'from-red-500 to-red-600',
     },
   ]
 
   const stats = [
-    { number: '500+', label: 'Active Students' },
-    { number: '50+', label: 'Expert Teachers' },
-    { number: '1000+', label: 'Discussion Topics' },
-    { number: '95%', label: 'Success Rate' },
+    { number: '500+', label: 'Active Chemists' },
+    { number: '50+', label: 'Expert Catalysts' },
+    { number: '1000+', label: 'Lab Experiments' },
+    { number: '95%', label: 'Yield Rate' },
   ]
 
   const chemistryTopics = [
@@ -87,21 +87,21 @@ export default function Home() {
                 {!isAuthenticated ? (
                   <>
                     <Link href="/register" className="btn-primary text-center">
-                      Get Started Free
+                      Begin Your Reaction
                       <ArrowRight className="w-5 h-5 ml-2 inline" />
                     </Link>
                     <Link href="/topics" className="btn-secondary text-center">
-                      Explore Topics
+                      Explore Experiments
                     </Link>
                   </>
                 ) : (
                   <>
                     <Link href="/dashboard" className="btn-primary text-center">
-                      Go to Dashboard
+                      Enter the Lab
                       <ArrowRight className="w-5 h-5 ml-2 inline" />
                     </Link>
                     <Link href="/quizzes" className="btn-secondary text-center">
-                      Take a Quiz
+                      Run a Lab Test
                     </Link>
                   </>
                 )}
@@ -179,7 +179,7 @@ export default function Home() {
               Everything You Need to Excel in Chemistry
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Our platform provides comprehensive tools and resources designed specifically for A/L chemistry students.
+              Our platform provides comprehensive tools and lab resources designed specifically for A/L chemistry students.
             </p>
           </motion.div>
 
@@ -220,7 +220,7 @@ export default function Home() {
               Comprehensive Chemistry Coverage
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Master all areas of chemistry with our specialized discussion topics and quizzes.
+              Master all areas of chemistry with our specialized experiments and lab tests.
             </p>
           </motion.div>
 
@@ -266,13 +266,13 @@ export default function Home() {
               Ready to Excel in Chemistry?
             </h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of A/L chemistry students who are already learning, sharing, and succeeding together.
+              Join thousands of A/L chemistry students who are already experimenting, bonding, and succeeding together.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               {[
-                { icon: CheckCircle, text: 'Free to join' },
-                { icon: CheckCircle, text: 'Expert teachers' },
-                { icon: CheckCircle, text: 'Interactive learning' },
+                { icon: CheckCircle, text: 'Free to bond' },
+                { icon: CheckCircle, text: 'Expert catalysts' },
+                { icon: CheckCircle, text: 'Interactive experiments' },
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center justify-center space-x-2 text-gray-300">
                   <Icon className="w-5 h-5 text-green-400" />
@@ -282,12 +282,12 @@ export default function Home() {
             </div>
             {!isAuthenticated ? (
               <Link href="/register" className="btn-primary inline-flex items-center">
-                Start Learning Today
+                Ignite Your Reaction
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
             ) : (
               <Link href="/dashboard" className="btn-primary inline-flex items-center">
-                Go to Dashboard
+                Enter the Lab
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
             )}

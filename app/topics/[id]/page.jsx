@@ -256,7 +256,7 @@ export default function TopicDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 text-primary-400 animate-spin" />
-          <p className="text-gray-400">Loading topic...</p>
+          <p className="text-gray-400">Heating up the reaction...</p>
         </div>
       </div>
     )
@@ -268,10 +268,10 @@ export default function TopicDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="glass-card p-10 rounded-2xl text-center max-w-md">
           <FlaskConical className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Topic Not Found</h2>
-          <p className="text-gray-400 mb-6">This topic doesn&apos;t exist or has been removed.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Compound Not Found</h2>
+          <p className="text-gray-400 mb-6">This experiment doesn&apos;t exist or has been removed.</p>
           <button onClick={() => router.push('/topics')} className="btn-primary px-6 py-2">
-            Browse Topics
+            Browse Experiments
           </button>
         </div>
       </div>
@@ -289,7 +289,7 @@ export default function TopicDetail() {
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Topics
+          Back to Experiments
         </button>
       </motion.div>
 
@@ -503,13 +503,13 @@ export default function TopicDetail() {
         >
           <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Send className="w-5 h-5 text-primary-400" />
-            Join the Discussion
+            Join the Reaction
           </h2>
           <form onSubmit={handlePostSubmit}>
             <textarea
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
-              placeholder="Share your thoughts, ask questions, or provide insights..."
+              placeholder="Share your thoughts, ask questions, or provide lab insights..."
               className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors resize-none"
               rows={4}
             />
@@ -530,7 +530,7 @@ export default function TopicDetail() {
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    Post
+                    React
                   </>
                 )}
               </motion.button>
@@ -544,9 +544,9 @@ export default function TopicDetail() {
           transition={{ delay: 0.1 }}
           className="glass-card p-6 rounded-xl mb-6 text-center"
         >
-          <p className="text-gray-400 mb-3">Login to join the discussion</p>
+          <p className="text-gray-400 mb-3">Enter the lab to join the reaction</p>
           <button onClick={() => router.push('/login')} className="btn-primary px-6 py-2">
-            Login
+            Enter the Lab
           </button>
         </motion.div>
       )}
@@ -555,7 +555,7 @@ export default function TopicDetail() {
       <div>
         <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-primary-400" />
-          Discussion ({sortedPosts.length} {sortedPosts.length === 1 ? 'post' : 'posts'})
+          Reactions ({sortedPosts.length} {sortedPosts.length === 1 ? 'reaction' : 'reactions'})
         </h2>
 
         {sortedPosts.length === 0 ? (
@@ -565,7 +565,7 @@ export default function TopicDetail() {
             className="glass-card p-10 rounded-xl text-center"
           >
             <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-400">No posts yet. Be the first to contribute!</p>
+            <p className="text-gray-400">No reactions yet. Be the first to catalyze!</p>
           </motion.div>
         ) : (
           <div className="space-y-4">

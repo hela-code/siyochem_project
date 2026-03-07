@@ -11,9 +11,9 @@ const Footer = () => {
   const footerLinks = {
     platform: [
       { name: 'Home', path: '/' },
-      { name: 'Topics', path: '/topics' },
-      { name: 'Quizzes', path: '/quizzes' },
-      { name: 'Dashboard', path: '/dashboard' },
+      { name: 'Experiments', path: '/topics' },
+      { name: 'Lab Tests', path: '/quizzes' },
+      { name: 'Lab Dashboard', path: '/dashboard' },
     ],
     resources: [
       { name: 'Study Materials', path: '#' },
@@ -78,7 +78,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Platform</h3>
+            <h3 className="text-white font-semibold mb-4">The Lab</h3>
             <ul className="space-y-2">
               {footerLinks.platform.map((link) => (
                 <li key={link.name}>
@@ -95,7 +95,7 @@ const Footer = () => {
 
           {/* Resources */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Resources</h3>
+            <h3 className="text-white font-semibold mb-4">Lab Resources</h3>
             <ul className="space-y-2">
               {footerLinks.resources.map((link) => (
                 <li key={link.name}>

@@ -1,7 +1,14 @@
 {
-  "/create-topic/page": "app/create-topic/page.js",
-  "/topics/page": "app/topics/page.js",
+  "/profile/[id]/page": "app/profile/[id]/page.js",
   "/page": "app/page.js",
+  "/topics/page": "app/topics/page.js",
+  "/create-topic/page": "app/create-topic/page.js",
   "/topics/[id]/page": "app/topics/[id]/page.js",
-  "/profile/[id]/page": "app/profile/[id]/page.js"
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/topics/[id]/route": "app/api/topics/[id]/route.js",
+  "/api/topics/route": "app/api/topics/route.js",
+  "/feedback/page": "app/feedback/page.js",
+  "/api/feedback/route": "app/api/feedback/route.js",
+  "/quizzes/page": "app/quizzes/page.js",
+  "/api/quizzes/route": "app/api/quizzes/route.js"
 }

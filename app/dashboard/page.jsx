@@ -25,19 +25,19 @@ export default function Dashboard() {
   }, [loading, isAuthenticated, router])
 
   const stats = [
-    { label: 'Topics Created', value: '12', icon: BookOpen, color: 'from-blue-500 to-blue-600', change: '+2 this week' },
-    { label: 'Quizzes Taken', value: '24', icon: Brain, color: 'from-green-500 to-green-600', change: '+5 this week' },
-    { label: 'Average Score', value: '85%', icon: Award, color: 'from-purple-500 to-purple-600', change: '+3% improvement' },
-    { label: 'Study Streak', value: '7 days', icon: Activity, color: 'from-orange-500 to-orange-600', change: 'Personal best!' },
+    { label: 'Experiments Published', value: '12', icon: BookOpen, color: 'from-blue-500 to-blue-600', change: '+2 this week' },
+    { label: 'Lab Tests Completed', value: '24', icon: Brain, color: 'from-green-500 to-green-600', change: '+5 this week' },
+    { label: 'Average Yield', value: '85%', icon: Award, color: 'from-purple-500 to-purple-600', change: '+3% improvement' },
+    { label: 'Reaction Streak', value: '7 days', icon: Activity, color: 'from-orange-500 to-orange-600', change: 'Personal best!' },
   ]
 
   const recentActivity = [
-    { type: 'quiz', title: 'Completed Organic Chemistry Quiz', description: 'Scored 18/20 (90%)', time: '2 hours ago', icon: Brain },
-    { type: 'topic', title: 'Posted in Chemical Bonding Discussion', description: 'Shared insights on covalent bonds', time: '5 hours ago', icon: BookOpen },
-    { type: 'achievement', title: 'Earned "Chemistry Expert" Badge', description: 'Completed 10 quizzes with 80%+ scores', time: '1 day ago', icon: Award },
+    { type: 'quiz', title: 'Completed Organic Chemistry Lab Test', description: 'Yield: 18/20 (90%)', time: '2 hours ago', icon: Brain },
+    { type: 'topic', title: 'Reacted in Chemical Bonding Experiment', description: 'Shared insights on covalent bonds', time: '5 hours ago', icon: BookOpen },
+    { type: 'achievement', title: 'Earned "Lab Expert" Badge', description: 'Completed 10 lab tests with 80%+ yield', time: '1 day ago', icon: Award },
   ]
 
-  const recommendedQuizzes = [
+  const recommendedExperiments = [
     { title: 'Advanced Organic Chemistry', topic: 'Reaction Mechanisms', duration: '30 minutes', difficulty: 'Hard' },
     { title: 'Physical Chemistry Basics', topic: 'Thermodynamics', duration: '20 minutes', difficulty: 'Medium' },
   ]
@@ -56,7 +56,7 @@ export default function Dashboard() {
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
           Welcome back, {user?.profile?.firstName}! 👋
         </h1>
-        <p className="text-gray-300">Ready to continue your chemistry journey? Here&apos;s your learning dashboard.</p>
+        <p className="text-gray-300">Ready to continue your chemistry journey? Here&apos;s your lab dashboard.</p>
       </motion.div>
 
       {/* Stats Grid */}
@@ -95,7 +95,7 @@ export default function Dashboard() {
           <div className="glass-card p-6 rounded-xl">
             <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
               <Activity className="w-5 h-5 mr-2 text-primary-400" />
-              Recent Activity
+              Recent Reactions
             </h2>
             <div className="space-y-4">
               {recentActivity.map((activity, index) => {
@@ -133,21 +133,21 @@ export default function Dashboard() {
           <div className="glass-card p-6 rounded-xl">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
               <Target className="w-5 h-5 mr-2 text-primary-400" />
-              Quick Actions
+              Quick Experiments
             </h2>
             <div className="space-y-3">
               <Link href="/topics" className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-200">
                 <BookOpen className="w-5 h-5 text-primary-400" />
-                <span className="text-white">Browse Topics</span>
+                <span className="text-white">Browse Experiments</span>
               </Link>
               <Link href="/quizzes" className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-200">
                 <Brain className="w-5 h-5 text-primary-400" />
-                <span className="text-white">Take Quiz</span>
+                <span className="text-white">Run Lab Test</span>
               </Link>
               {user?.role === 'teacher' && (
                 <Link href="/create-quiz" className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-200">
                   <PlusCircle className="w-5 h-5 text-primary-400" />
-                  <span className="text-white">Create Quiz</span>
+                  <span className="text-white">Design Experiment</span>
                 </Link>
               )}
             </div>
@@ -156,10 +156,10 @@ export default function Dashboard() {
           <div className="glass-card p-6 rounded-xl">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
               <Clock className="w-5 h-5 mr-2 text-primary-400" />
-              Recommended Quizzes
+              Recommended Experiments
             </h2>
             <div className="space-y-3">
-              {recommendedQuizzes.map((quiz, index) => (
+              {recommendedExperiments.map((quiz, index) => (
                 <div key={index} className="p-3 bg-white/5 rounded-lg">
                   <h3 className="text-white font-medium text-sm">{quiz.title}</h3>
                   <p className="text-gray-400 text-xs">{quiz.topic}</p>
@@ -179,7 +179,7 @@ export default function Dashboard() {
           <div className="glass-card p-6 rounded-xl">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
               <TrendingUp className="w-5 h-5 mr-2 text-primary-400" />
-              Your Profile
+              Your Element Card
             </h2>
             <Link
               href={`/profile/${user?.id}`}

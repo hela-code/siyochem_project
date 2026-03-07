@@ -51,9 +51,9 @@ const Navbar = () => {
 
   const navItems = [
     { name: 'Home', path: '/', icon: FlaskConical },
-    { name: 'Topics', path: '/topics', icon: TrendingUp },
-    { name: 'Feedback', path: '/feedback', icon: MessageSquare },
-    { name: 'Quizzes', path: '/quizzes', icon: Brain },
+    { name: 'Experiments', path: '/topics', icon: TrendingUp },
+    { name: 'Reaction Wall', path: '/feedback', icon: MessageSquare },
+    { name: 'Lab Tests', path: '/quizzes', icon: Brain },
   ]
 
   const isActivePath = (path) => {
@@ -174,7 +174,7 @@ const Navbar = () => {
                           className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                         >
                           <TrendingUp className="w-4 h-4" />
-                          <span>Dashboard</span>
+                          <span>Lab Dashboard</span>
                         </Link>
 
                         <Link
@@ -183,7 +183,7 @@ const Navbar = () => {
                           className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                         >
                           <User className="w-4 h-4" />
-                          <span>Profile</span>
+                          <span>My Element</span>
                         </Link>
 
                         <Link
@@ -192,7 +192,7 @@ const Navbar = () => {
                           className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                         >
                           <Send className="w-4 h-4" />
-                          <span>Messages</span>
+                          <span>Lab Notes</span>
                         </Link>
 
                         {user?.role === 'teacher' && (
@@ -202,7 +202,7 @@ const Navbar = () => {
                             className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                           >
                             <PlusCircle className="w-4 h-4" />
-                            <span>Create Quiz</span>
+                            <span>Design Experiment</span>
                           </Link>
                         )}
 
@@ -211,7 +211,7 @@ const Navbar = () => {
                           className="flex items-center space-x-2 w-full px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200"
                         >
                           <LogOut className="w-4 h-4" />
-                          <span>Logout</span>
+                          <span>Exit Lab</span>
                         </button>
                       </div>
                     </motion.div>
@@ -223,10 +223,10 @@ const Navbar = () => {
                     href="/login"
                     className="text-gray-300 hover:text-white transition-colors duration-200"
                   >
-                    Login
+                    Enter Lab
                   </Link>
                   <Link href="/register" className="btn-primary text-sm py-2 px-4">
-                    Sign Up
+                    Join the Lab
                   </Link>
                 </div>
               )}
@@ -272,7 +272,7 @@ const Navbar = () => {
                     className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                   >
                     <TrendingUp className="w-4 h-4" />
-                    <span>Dashboard</span>
+                    <span>Lab Dashboard</span>
                   </Link>
 
                   <Link
@@ -281,7 +281,7 @@ const Navbar = () => {
                     className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                   >
                     <User className="w-4 h-4" />
-                    <span>Profile</span>
+                    <span>My Element</span>
                   </Link>
 
                   <Link
@@ -290,7 +290,7 @@ const Navbar = () => {
                     className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                   >
                     <Send className="w-4 h-4" />
-                    <span>Messages</span>
+                    <span>Lab Notes</span>
                   </Link>
 
                   {user?.role === 'teacher' && (
@@ -300,7 +300,7 @@ const Navbar = () => {
                       className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                     >
                       <PlusCircle className="w-4 h-4" />
-                      <span>Create Quiz</span>
+                      <span>Design Experiment</span>
                     </Link>
                   )}
 
@@ -309,7 +309,7 @@ const Navbar = () => {
                     className="flex items-center space-x-2 w-full px-3 py-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-200"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
+                    <span>Exit Lab</span>
                   </button>
                 </>
               ) : (
@@ -319,14 +319,14 @@ const Navbar = () => {
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                   >
-                    <span>Login</span>
+                    <span>Enter Lab</span>
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center space-x-2 w-full px-3 py-2 btn-primary rounded-lg"
                   >
-                    <span>Sign Up</span>
+                    <span>Join the Lab</span>
                   </Link>
                 </>
               )}
