@@ -369,12 +369,12 @@ export default function Profile() {
                 </div>
 
                 {isOwnProfile ? (
-                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setIsEditing(!isEditing)}
-                      className="btn-primary flex items-center gap-2 px-4 py-2 text-xs sm:text-sm sm:px-5 sm:py-2.5 shrink-0"
+                      className="btn-primary flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm sm:px-5 rounded-xl"
                     >
                       <Edit className="w-4 h-4" />
                       Edit Element Card
@@ -383,7 +383,7 @@ export default function Profile() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => router.push('/dashboard')}
-                      className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm sm:px-5 sm:py-2.5 font-semibold rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20 hover:text-white transition-all duration-300 shrink-0"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm sm:px-5 font-semibold rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20 hover:text-white transition-all duration-300"
                     >
                       <TrendingUp className="w-4 h-4" />
                       Lab Dashboard
@@ -392,7 +392,7 @@ export default function Profile() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => router.push('/messages')}
-                      className="flex items-center gap-2 px-4 py-2 text-xs sm:text-sm sm:px-5 sm:py-2.5 font-semibold rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20 hover:text-white transition-all duration-300 shrink-0"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm sm:px-5 font-semibold rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20 hover:text-white transition-all duration-300"
                     >
                       <Send className="w-4 h-4" />
                       Messages
