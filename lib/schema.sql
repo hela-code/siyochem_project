@@ -13,6 +13,7 @@ CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR(30) UNIQUE NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
+  phone VARCHAR(20) UNIQUE,
   password VARCHAR(255) NOT NULL,
   role VARCHAR(20) DEFAULT 'student' CHECK (role IN ('student', 'teacher')),
   first_name VARCHAR(100) NOT NULL,
@@ -254,6 +255,7 @@ CREATE TABLE quiz_attempt_answers (
 -- ==================
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_phone ON users(phone);
 CREATE INDEX idx_users_role ON users(role);
 
 CREATE INDEX idx_topics_author ON topics(author_id);

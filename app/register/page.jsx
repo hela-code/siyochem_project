@@ -4,17 +4,17 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { FlaskConical, Eye, EyeOff, Mail, Lock, User, GraduationCap } from 'lucide-react'
+import { FlaskConical, Eye, EyeOff, Mail, Lock, Phone, Key } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import toast from 'react-hot-toast'
 
 export default function Register() {
   const [formData, setFormData] = useState({
     username: '',
+    phone: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'student',
     firstName: '',
     lastName: '',
     school: '',
@@ -22,8 +22,11 @@ export default function Register() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
+  const [phoneVerified, setPhoneVerified] = useState(false)
 
-  const { register, isAuthenticated } = useAuthStore()
+  const { register, isAuthenticated, setAuthSession } = useAuthStore()
   const router = useRouter()
 
   useEffect(() => {
@@ -34,8 +37,85 @@ export default function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const normalizePhone = (rawPhone = '') => {
+    const digits = String(rawPhone).replace(/\D/g, '')
+    if (/^0\d{9}$/.test(digits)) return `94${digits.slice(1)}`
+    if (/^94\d{9}$/.test(digits)) return digits
+    return null
+  }
+
+  const handleRequestOTP = async () => {
+    const normalizedPhone = normalizePhone(formData.phone)
+    if (!normalizedPhone) {
+      toast.error('Enter a valid Sri Lankan mobile number')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: normalizedPhone }),
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        setFormData((prev) => ({ ...prev, phone: data.phone || normalizedPhone }))
+        setOtpSent(true)
+        setPhoneVerified(false)
+        toast.success('OTP sent to WhatsApp')
+      } else {
+        toast.error(data.message || 'Failed to send OTP')
+      }
+    } catch {
+      toast.error('An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleVerifyOTP = async () => {
+    const normalizedPhone = normalizePhone(formData.phone)
+    if (!normalizedPhone || !otpCode) {
+      toast.error('Enter phone number and OTP')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: normalizedPhone, otp: otpCode }),
+      })
+      const data = await res.json()
+
+      if (data.success && data.token && data.user) {
+        setAuthSession(data.user, data.token)
+        toast.success('This phone is already registered. Logging you in...')
+        router.push('/dashboard')
+      } else if (data.success && data.requiresRegistration) {
+        setPhoneVerified(true)
+        toast.success('Phone verified. You can complete registration now.')
+      } else {
+        toast.error(data.message || 'Invalid OTP')
+      }
+    } catch {
+      toast.error('An unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (!phoneVerified) {
+      toast.error('Please verify your phone number before registering')
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match')
       return
@@ -79,32 +159,6 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Role Selection */}
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">My role in the lab...</label>
-              <div className="grid grid-cols-2 gap-3">
-                {['student', 'teacher'].map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role })}
-                    className={`p-3 rounded-lg border transition-all duration-200 ${
-                      formData.role === role
-                        ? 'border-primary-500 bg-primary-500/20 text-primary-400'
-                        : 'border-gray-600 text-gray-300 hover:border-gray-500'
-                    }`}
-                  >
-                    {role === 'student' ? (
-                      <GraduationCap className="w-5 h-5 mx-auto mb-1" />
-                    ) : (
-                      <User className="w-5 h-5 mx-auto mb-1" />
-                    )}
-                    <span className="text-sm capitalize">{role}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -147,6 +201,59 @@ export default function Register() {
               />
             </div>
 
+            {/* Mobile Number */}
+            <div>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Mobile Number</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className="input-field pl-10"
+                  placeholder="077XXXXXXX or 9477XXXXXXX"
+                />
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleRequestOTP}
+                  disabled={loading}
+                  className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-sm text-gray-200 transition-colors"
+                >
+                  Send OTP
+                </button>
+                {phoneVerified && <span className="text-xs text-green-400">Phone verified</span>}
+              </div>
+            </div>
+
+            {otpSent && (
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">Verify OTP</label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    className="input-field pl-10"
+                    placeholder="Enter 6-digit OTP"
+                    maxLength={6}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleVerifyOTP}
+                  disabled={loading}
+                  className="mt-2 px-3 py-2 rounded-lg bg-primary-600 hover:bg-primary-500 text-sm text-white transition-colors"
+                >
+                  Verify OTP
+                </button>
+              </div>
+            )}
+
             {/* Email */}
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">Email Address</label>
@@ -164,36 +271,34 @@ export default function Register() {
               </div>
             </div>
 
-            {/* School & Grade (students only) */}
-            {formData.role === 'student' && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">School</label>
-                  <input
-                    type="text"
-                    name="school"
-                    value={formData.school}
-                    onChange={handleChange}
-                    className="input-field"
-                    placeholder="School name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">Grade</label>
-                  <select
-                    name="grade"
-                    value={formData.grade}
-                    onChange={handleChange}
-                    className="input-field"
-                  >
-                    <option value="">Select grade</option>
-                    <option value="Grade 10">Grade 10</option>
-                    <option value="Grade 11">Grade 11</option>
-                    <option value="A/L">A/L</option>
-                  </select>
-                </div>
+            {/* School & Grade */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">School</label>
+                <input
+                  type="text"
+                  name="school"
+                  value={formData.school}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="School name"
+                />
               </div>
-            )}
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">Grade</label>
+                <select
+                  name="grade"
+                  value={formData.grade}
+                  onChange={handleChange}
+                  className="input-field"
+                >
+                  <option value="">Select grade</option>
+                  <option value="Grade 10">Grade 10</option>
+                  <option value="Grade 11">Grade 11</option>
+                  <option value="A/L">A/L</option>
+                </select>
+              </div>
+            </div>
 
             {/* Password */}
             <div>

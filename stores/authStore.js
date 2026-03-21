@@ -14,6 +14,11 @@ const useAuthStore = create(
       loading: true,
 
       // Actions
+      setAuthSession: (user, token) => {
+        set({ user, token, isAuthenticated: true, loading: false })
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      },
+
       login: async (credentials) => {
         try {
           set({ loading: true })
