@@ -94,11 +94,6 @@ function MessagesContent() {
     fetchMessages()
   }, [activeChat, token])
 
-  // Auto-scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
   // Poll for new messages every 5 seconds
   useEffect(() => {
     if (!activeChat || !token) return
