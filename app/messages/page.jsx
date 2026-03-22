@@ -68,11 +68,6 @@ function MessagesContent() {
     }
   }, [authLoading, isAuthenticated])
 
-  // Show restricted message for students if feature is disabled
-  if (!authLoading && isAuthenticated && currentUser?.role === 'student' && !featureEnabled) {
-    return <FeatureRestricted feature="Lab Notes (Messages)" />
-  }
-
   // Set active chat from store on mount
   useEffect(() => {
     if (activeChatId) {
@@ -258,6 +253,11 @@ function MessagesContent() {
         <Loader2 className="w-10 h-10 text-primary-400 animate-spin" />
       </div>
     )
+  }
+
+  // Show restricted message for students if feature is disabled
+  if (currentUser?.role === 'student' && !featureEnabled) {
+    return <FeatureRestricted feature="Lab Notes (Messages)" />
   }
 
   return (
