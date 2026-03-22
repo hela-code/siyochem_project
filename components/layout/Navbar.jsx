@@ -26,6 +26,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [assessmentChecked, setAssessmentChecked] = useState(false)
   const [features, setFeatures] = useState({
     messages: true,
     experiments: true,
@@ -44,7 +45,7 @@ const Navbar = () => {
   const disabledFeaturesList = () => {
     const disabled = []
     if (!features.messages) disabled.push('Messages')
-    if (!features.experiments) disabled.push('Experiments')
+    if (!features.experiments) disabled.push('Lab Tests')
     if (!features.reaction_wall) disabled.push('Reaction Wall')
     return disabled.join(', ')
   }
@@ -65,15 +66,9 @@ const Navbar = () => {
 
     if (isAuthenticated) {
       loadFeatures()
-      
-      // For students: reload features every 3 seconds to detect when teachers disable features
-      // For teachers: no need to reload frequently
-      if (user?.role === 'student') {
-        const interval = setInterval(loadFeatures, 3000)
-        return () => clearInterval(interval)
-      }
+      // No auto-refresh - features loaded once on authentication
     }
-  }, [isAuthenticated, user?.role])
+  }, [isAuthenticated])
 
   // Get feature availability for teachers
   const canMessageStudents = user?.role === 'teacher' ? features.messages : false
@@ -114,19 +109,29 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Notification banner for students when features are disabled */}
-      {isAuthenticated && user?.role === 'student' && hasDisabledFeatures() && (
+      {/* Notification banner for students - always visible */}
+      {isAuthenticated && user?.role === 'student' && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-blue-600 to-blue-700 border-b border-blue-500/50 px-4 py-3 text-center sticky top-0 z-50"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 border-b border-blue-500/50 px-4 py-3 sticky top-0 z-50"
         >
-          <p className="text-white font-semibold text-lg flex items-center justify-center gap-2">
-            📝 <span>Complete your assessment</span>
-          </p>
-          <p className="text-blue-100 text-sm mt-1">
-            The following are now available: {disabledFeaturesList()}
-          </p>
+          <div className="flex items-center justify-center gap-3">
+            <input
+              type="checkbox"
+              checked={assessmentChecked}
+              onChange={(e) => setAssessmentChecked(e.target.checked)}
+              className="w-5 h-5 rounded cursor-pointer"
+            />
+            <div className="text-center flex-1">
+              <p className="text-white font-semibold text-lg flex items-center justify-center gap-2">
+                📝 <span>Complete your assessment</span>
+              </p>
+              <p className="text-blue-100 text-sm mt-1">
+                The following are now available: Lab Tests
+              </p>
+            </div>
+          </div>
         </motion.div>
       )}
 
