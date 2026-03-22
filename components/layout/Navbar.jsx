@@ -109,32 +109,6 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Notification banner for students - always visible */}
-      {isAuthenticated && user?.role === 'student' && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-blue-600 to-blue-700 border-b border-blue-500/50 px-4 py-3 sticky top-0 z-50"
-        >
-          <div className="flex items-center justify-center gap-3">
-            <input
-              type="checkbox"
-              checked={assessmentChecked}
-              onChange={(e) => setAssessmentChecked(e.target.checked)}
-              className="w-5 h-5 rounded cursor-pointer"
-            />
-            <div className="text-center flex-1">
-              <p className="text-white font-semibold text-lg flex items-center justify-center gap-2">
-                📝 <span>Complete your assessment</span>
-              </p>
-              <p className="text-blue-100 text-sm mt-1">
-                The following are now available: Lab Tests
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
       <nav className="glass-morphism sticky top-0 z-50 border-b border-white/10">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">

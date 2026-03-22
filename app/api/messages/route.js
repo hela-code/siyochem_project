@@ -13,38 +13,49 @@ export async function GET(request) {
     const sql = getSQL()
     const userId = decoded.userId
 
-    // Get all unique conversations with latest message
-    // Use a subquery approach that avoids DISTINCT ON issues
-    const conversations = await sql`
-      SELECT 
-        m.id as message_id,
-        m.content as last_message,
-        m.created_at as last_message_at,
-        m.sender_id,
-        m.is_read,
-        u.id as partner_id,
-        u.username,
-        u.first_name,
-        u.last_name,
-        u.avatar,
-        (SELECT COUNT(*) FROM messages 
-         WHERE sender_id = u.id AND receiver_id = ${userId} AND is_read = false
-        ) as unread_count
-      FROM messages m
-      JOIN users u ON u.id = CASE 
-        WHEN m.sender_id = ${userId} THEN m.receiver_id
-        ELSE m.sender_id
-      END
-      WHERE (m.sender_id = ${userId} OR m.receiver_id = ${userId})
-        AND m.id = (
-          SELECT m2.id FROM messages m2
-          WHERE (m2.sender_id = ${userId} AND m2.receiver_id = u.id)
-             OR (m2.sender_id = u.id AND m2.receiver_id = ${userId})
-          ORDER BY m2.created_at DESC
-          LIMIT 1
-        )
-      ORDER BY m.created_at DESC
+    // Get all messages for this user
+    const allMessages = await sql`
+      SELECT id, content, created_at, sender_id, receiver_id, is_read
+      FROM messages
+      WHERE sender_id = ${userId} OR receiver_id = ${userId}
+      ORDER BY created_at DESC
     `
+
+    // Group conversations by partner and get latest message
+    const conversationMap = new Map()
+    for (const msg of allMessages) {
+      const partnerId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id
+      if (!conversationMap.has(partnerId)) {
+        conversationMap.set(partnerId, msg)
+      }
+    }
+
+    // Get user details for each conversation partner
+    const conversations = []
+    for (const [partnerId, msg] of conversationMap) {
+      const partner = await sql`SELECT id, username, first_name, last_name, avatar FROM users WHERE id = ${partnerId}`
+      if (partner.length > 0) {
+        // Count unread messages from this partner
+        const unreadCount = allMessages.filter(
+          m => m.sender_id === partnerId && m.receiver_id === userId && !m.is_read
+        ).length
+
+        conversations.push({
+          partner_id: partnerId,
+          username: partner[0].username,
+          first_name: partner[0].first_name,
+          last_name: partner[0].last_name,
+          avatar: partner[0].avatar,
+          last_message: msg.content,
+          last_message_at: msg.created_at,
+          sender_id: msg.sender_id,
+          unread_count: unreadCount,
+        })
+      }
+    }
+
+    // Sort by latest message date
+    conversations.sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at))
 
     // Get ALL bonded users (both directions: I bonded them OR they bonded me)
     const allBondedUsers = await sql`
@@ -74,8 +85,8 @@ export async function GET(request) {
         lastMessage: c.last_message,
         lastMessageAt: c.last_message_at,
         isMine: c.sender_id === userId,
-        isRead: c.is_read,
-        unreadCount: parseInt(c.unread_count),
+        isRead: false,
+        unreadCount: c.unread_count,
       })),
       bondedUsers: bondedWithoutConvo.map((b) => ({
         id: b.id,

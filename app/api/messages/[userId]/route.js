@@ -109,20 +109,7 @@ export async function POST(request, { params }) {
       )
     }
 
-    // Check bond exists (either direction)
-    const bondCheck = await sql`
-      SELECT id FROM profile_bonds
-      WHERE (profile_id = ${receiverId} AND user_id = ${senderId})
-         OR (profile_id = ${senderId} AND user_id = ${receiverId})
-      LIMIT 1
-    `
-    if (bondCheck.length === 0) {
-      return NextResponse.json(
-        { success: false, message: 'You can only message bonded users' },
-        { status: 403 }
-      )
-    }
-
+    // Parse request body
     const body = await request.json()
     const { content } = body
 
