@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { FlaskConical, Eye, EyeOff, Mail, Lock, User, GraduationCap } from 'lucide-react'
+import { FlaskConical, Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import toast from 'react-hot-toast'
 
@@ -14,7 +14,6 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'student',
     firstName: '',
     lastName: '',
     school: '',
@@ -74,37 +73,11 @@ export default function Register() {
             >
               <FlaskConical className="w-8 h-8 text-white" />
             </motion.div>
-            <h1 className="text-3xl font-bold text-gradient mb-2">Join Chem Hub</h1>
-            <p className="text-gray-300">Create your formula to enter the lab</p>
+            <h1 className="text-3xl font-bold text-gradient mb-2">Create Account</h1>
+            <p className="text-gray-300">Create your student account to get started</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Role Selection */}
-            <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">My role in the lab...</label>
-              <div className="grid grid-cols-2 gap-3">
-                {['student', 'teacher'].map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role })}
-                    className={`p-3 rounded-lg border transition-all duration-200 ${
-                      formData.role === role
-                        ? 'border-primary-500 bg-primary-500/20 text-primary-400'
-                        : 'border-gray-600 text-gray-300 hover:border-gray-500'
-                    }`}
-                  >
-                    {role === 'student' ? (
-                      <GraduationCap className="w-5 h-5 mx-auto mb-1" />
-                    ) : (
-                      <User className="w-5 h-5 mx-auto mb-1" />
-                    )}
-                    <span className="text-sm capitalize">{role}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -164,40 +137,38 @@ export default function Register() {
               </div>
             </div>
 
-            {/* School & Grade (students only) */}
-            {formData.role === 'student' && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">School</label>
-                  <input
-                    type="text"
-                    name="school"
-                    value={formData.school}
-                    onChange={handleChange}
-                    className="input-field"
-                    placeholder="School name"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">Grade</label>
-                  <select
-                    name="grade"
-                    value={formData.grade}
-                    onChange={handleChange}
-                    className="input-field"
-                  >
-                    <option value="">Select grade</option>
-                    <option value="Grade 10">Grade 10</option>
-                    <option value="Grade 11">Grade 11</option>
-                    <option value="A/L">A/L</option>
-                  </select>
-                </div>
+            {/* Student Details */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">School</label>
+                <input
+                  type="text"
+                  name="school"
+                  value={formData.school}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="School name"
+                />
               </div>
-            )}
+              <div>
+                <label className="block text-gray-300 text-sm font-medium mb-2">Grade</label>
+                <select
+                  name="grade"
+                  value={formData.grade}
+                  onChange={handleChange}
+                  className="input-field"
+                >
+                  <option value="">Select grade</option>
+                  <option value="Grade 10">Grade 10</option>
+                  <option value="Grade 11">Grade 11</option>
+                  <option value="A/L">A/L</option>
+                </select>
+              </div>
+            </div>
 
             {/* Password */}
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Secret Formula</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -222,7 +193,7 @@ export default function Register() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Confirm Formula</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Confirm Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -246,10 +217,10 @@ export default function Register() {
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Synthesizing profile...</span>
+                  <span>Creating account...</span>
                 </div>
               ) : (
-                'Synthesize Profile'
+                'Create Account'
               )}
             </button>
           </form>
@@ -258,7 +229,7 @@ export default function Register() {
             <p className="text-gray-300">
               Already have an account?{' '}
               <Link href="/login" className="text-primary-400 hover:text-primary-300 transition-colors">
-                Enter the Lab
+                Sign in
               </Link>
             </p>
           </div>
