@@ -55,10 +55,10 @@ export default function Topics() {
       try {
         setFeaturesLoading(true)
         const { data } = await axios.get('/api/features/status')
-        // Both experiments (Design) and start_experiment must be enabled
+        // Both experiments (Design) and start_experiment must be enabled for creating experiments
         const isEnabled = (data.features?.experiments ?? true) && (data.features?.start_experiment ?? true)
         setFeatureEnabled(isEnabled)
-        console.log('Topics page - feature status:', { experiments: data.features?.experiments, start_experiment: data.features?.start_experiment, combined: isEnabled })
+        console.log('Topics page - feature status:', { experiments: data.features?.experiments, start_experiment: data.features?.start_experiment, canCreateExperiments: isEnabled })
       } catch (error) {
         console.error('Error checking feature status:', error)
         setFeatureEnabled(true) // Default to enabled on error

@@ -25,6 +25,7 @@ export default function TeacherSettings() {
     messages: true,
     experiments: true,
     start_experiment: true,
+    add_reaction: true,
     reaction_wall: true,
   })
 
@@ -126,6 +127,12 @@ export default function TeacherSettings() {
       name: 'Start Experiment',
       description: 'Allow students to start and take lab tests',
       icon: PlusCircle,
+    },
+    {
+      key: 'add_reaction',
+      name: 'Add Reaction (Catalyze)',
+      description: 'Allow students to add reactions/catalyze topics and posts',
+      icon: TrendingUp,
     },
     {
       key: 'reaction_wall',

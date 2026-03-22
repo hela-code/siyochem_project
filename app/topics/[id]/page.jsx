@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
   Play,
   Lock,
+  AlertCircle,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import axios from 'axios'
@@ -43,7 +44,7 @@ export default function TopicDetail() {
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({ title: '', description: '', category: '', tags: '', image: '' })
   const [saving, setSaving] = useState(false)
-  const [globalFeatures, setGlobalFeatures] = useState({ experiments: true, start_experiment: true })
+  const [globalFeatures, setGlobalFeatures] = useState({ experiments: true, start_experiment: true, add_reaction: true })
   const [loadingFeatures, setLoadingFeatures] = useState(true)
 
   // Fetch topic + posts + global features
@@ -315,6 +316,21 @@ export default function TopicDetail() {
         </button>
       </motion.div>
 
+      {/* Add Reaction disabled warning for students */}
+      {!loadingFeatures && isAuthenticated && currentUser?.role === 'student' && !globalFeatures?.add_reaction && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl flex items-center gap-3"
+        >
+          <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-orange-300 font-medium">Reactions Currently Disabled</p>
+            <p className="text-orange-200/70 text-sm">You can view this experiment and past reactions, but cannot add new ones right now. Check back later!</p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Topic Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 sm:p-8 rounded-xl mb-6">
         {/* Pinned + Category + Edit button */}
@@ -483,12 +499,16 @@ export default function TopicDetail() {
 
           <div className="flex items-center gap-4">
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: globalFeatures?.add_reaction ? 0.9 : 1 }}
+              disabled={!globalFeatures?.add_reaction}
+              title={!globalFeatures?.add_reaction ? 'Teacher has disabled Add Reaction feature' : ''}
               onClick={handleTopicLike}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300 ${
-                topicLiked
-                  ? 'text-emerald-400 bg-emerald-500/10'
-                  : 'text-gray-400 hover:text-emerald-400 hover:bg-white/5'
+                globalFeatures?.add_reaction
+                  ? topicLiked
+                    ? 'text-emerald-400 bg-emerald-500/10 cursor-pointer'
+                    : 'text-gray-400 hover:text-emerald-400 hover:bg-white/5 cursor-pointer'
+                  : 'text-gray-500 cursor-not-allowed opacity-50'
               }`}
             >
               <FlaskConical className={`w-5 h-5 transition-transform ${topicLiked ? 'scale-110' : ''}`} />
@@ -552,49 +572,70 @@ export default function TopicDetail() {
         </div>
       </motion.div>
 
-      {/* Create Post */}
+      {/* Create Post / Add Reaction */}
       {isAuthenticated ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-card p-6 rounded-xl mb-6"
+          className="mb-6"
         >
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Send className="w-5 h-5 text-primary-400" />
-            Join the Reaction
-          </h2>
-          <form onSubmit={handlePostSubmit}>
-            <textarea
-              value={newPost}
-              onChange={(e) => setNewPost(e.target.value)}
-              placeholder="Share your thoughts, ask questions, or provide lab insights..."
-              className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors resize-none"
-              rows={4}
-            />
-            <div className="flex justify-between items-center mt-3">
-              <p className="text-gray-500 text-xs">{newPost.length}/2000</p>
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={!newPost.trim() || posting}
-                className="btn-primary flex items-center gap-2 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          {!globalFeatures?.add_reaction ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="glass-card p-8 rounded-xl text-center"
+            >
+              <Lock className="w-12 h-12 text-orange-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-white mb-2">Add Reaction Disabled</h2>
+              <p className="text-gray-400 mb-6">Reactions are temporarily disabled by your teacher. Check back later!</p>
+              <button
+                disabled
+                className="btn-primary px-8 py-3 opacity-50 cursor-not-allowed flex items-center gap-2 mx-auto"
               >
-                {posting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Posting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    React
-                  </>
-                )}
-              </motion.button>
+                <Send className="w-5 h-5" />
+                Add Reaction
+              </button>
+            </motion.div>
+          ) : (
+            <div className="glass-card p-6 rounded-xl">
+              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Send className="w-5 h-5 text-primary-400" />
+                Join the Reaction
+              </h2>
+              <form onSubmit={handlePostSubmit}>
+                <textarea
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  placeholder="Share your thoughts, ask questions, or provide lab insights..."
+                  className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors resize-none"
+                  rows={4}
+                />
+                <div className="flex justify-between items-center mt-3">
+                  <p className="text-gray-500 text-xs">{newPost.length}/2000</p>
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={!newPost.trim() || posting}
+                    className="btn-primary flex items-center gap-2 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {posting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Posting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        React
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+              </form>
             </div>
-          </form>
+          )}
         </motion.div>
       ) : (
         <motion.div
@@ -669,12 +710,16 @@ export default function TopicDetail() {
                     {/* Post Actions */}
                     <div className="flex items-center gap-6 pt-3 border-t border-white/10">
                       <motion.button
-                        whileTap={{ scale: 0.9 }}
+                        whileTap={{ scale: globalFeatures?.add_reaction ? 0.9 : 1 }}
+                        disabled={!globalFeatures?.add_reaction}
+                        title={!globalFeatures?.add_reaction ? 'Teacher has disabled Add Reaction feature' : ''}
                         onClick={() => handlePostLike(post.id)}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300 ${
-                          likeState.liked
-                            ? 'text-emerald-400 bg-emerald-500/10'
-                            : 'text-gray-400 hover:text-emerald-400 hover:bg-white/5'
+                          globalFeatures?.add_reaction
+                            ? likeState.liked
+                              ? 'text-emerald-400 bg-emerald-500/10 cursor-pointer'
+                              : 'text-gray-400 hover:text-emerald-400 hover:bg-white/5 cursor-pointer'
+                            : 'text-gray-500 cursor-not-allowed opacity-50'
                         }`}
                       >
                         <FlaskConical className={`w-4 h-4 transition-transform ${likeState.liked ? 'scale-110' : ''}`} />

@@ -51,6 +51,7 @@ INSERT INTO feature_settings (feature_name, is_enabled, description) VALUES
   ('messages', true, 'Enable/disable messages (Lab Notes)'),
   ('experiments', true, 'Enable/disable chemistry experiments'),
   ('start_experiment', true, 'Enable/disable student ability to start/take experiments'),
+  ('add_reaction', true, 'Enable/disable student ability to add reactions/catalyze topics'),
   ('reaction_wall', true, 'Enable/disable reaction wall');
 
 
