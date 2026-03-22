@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   BookOpen,
   PlusCircle,
@@ -16,6 +17,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import FeatureRestricted from '@/components/ui/FeatureRestricted'
 import axios from 'axios'
 
 const categories = [
@@ -30,13 +32,51 @@ const categories = [
 ]
 
 export default function Topics() {
+  const router = useRouter()
   const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState(null)
-  const { isAuthenticated } = useAuthStore()
+  const [featuresLoading, setFeaturesLoading] = useState(true)
+  const [featureEnabled, setFeatureEnabled] = useState(true)
+  const { isAuthenticated, user, loading: authLoading } = useAuthStore()
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.push('/login')
+  }, [authLoading, isAuthenticated, router])
+
+  // Check if experiments feature is enabled - refetch periodically
+  useEffect(() => {
+    const checkFeature = async () => {
+      try {
+        setFeaturesLoading(true)
+        const { data } = await axios.get('/api/features/status')
+        setFeatureEnabled(data.features?.experiments ?? true)
+        console.log('Topics page - feature status:', data.features?.experiments)
+      } catch (error) {
+        console.error('Error checking feature status:', error)
+        setFeatureEnabled(true) // Default to enabled on error
+      } finally {
+        setFeaturesLoading(false)
+      }
+    }
+
+    if (!authLoading && isAuthenticated) {
+      checkFeature()
+      
+      // Refetch every 5 seconds to stay in sync
+      const interval = setInterval(checkFeature, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading, isAuthenticated])
+
+  // Show restricted message for students if feature is disabled
+  if (!authLoading && isAuthenticated && user?.role === 'student' && !featureEnabled) {
+    return <FeatureRestricted feature="Chemistry Experiments" />
+  }
 
   useEffect(() => {
     const fetchTopics = async () => {

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
+import axios from 'axios'
 import {
   FlaskConical,
   Search,
@@ -16,6 +17,7 @@ import {
   TrendingUp,
   PlusCircle,
   Send,
+  Settings,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import SearchModal from '@/components/ui/SearchModal'
@@ -24,10 +26,59 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [features, setFeatures] = useState({
+    messages: true,
+    experiments: true,
+    reaction_wall: true,
+  })
   const { user, isAuthenticated, logout } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
   const dropdownRef = useRef(null)
+
+  // Check if any feature is disabled - for showing notification to students
+  const hasDisabledFeatures = () => {
+    return Object.values(features).some(enabled => !enabled)
+  }
+
+  const disabledFeaturesList = () => {
+    const disabled = []
+    if (!features.messages) disabled.push('Messages')
+    if (!features.experiments) disabled.push('Experiments')
+    if (!features.reaction_wall) disabled.push('Reaction Wall')
+    return disabled.join(', ')
+  }
+
+  // Load global feature settings - refetch whenever authenticated status changes
+  useEffect(() => {
+    const loadFeatures = async () => {
+      try {
+        const { data } = await axios.get('/api/features/status')
+        if (data.features) {
+          setFeatures(data.features)
+          console.log('Navbar features updated:', data.features)
+        }
+      } catch (error) {
+        console.error('Error loading features:', error)
+      }
+    }
+
+    if (isAuthenticated) {
+      loadFeatures()
+      
+      // For students: reload features every 3 seconds to detect when teachers disable features
+      // For teachers: no need to reload frequently
+      if (user?.role === 'student') {
+        const interval = setInterval(loadFeatures, 3000)
+        return () => clearInterval(interval)
+      }
+    }
+  }, [isAuthenticated, user?.role])
+
+  // Get feature availability for teachers
+  const canMessageStudents = user?.role === 'teacher' ? features.messages : false
+  const canCreateExperiments = user?.role === 'teacher' ? features.experiments : false
+  const canViewAnalytics = user?.role === 'teacher' ? features.reaction_wall : false
 
   // Auto-close dropdown when clicking outside
   useEffect(() => {
@@ -63,6 +114,22 @@ const Navbar = () => {
 
   return (
     <>
+      {/* Notification banner for students when features are disabled */}
+      {isAuthenticated && user?.role === 'student' && hasDisabledFeatures() && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-blue-600 to-blue-700 border-b border-blue-500/50 px-4 py-3 text-center sticky top-0 z-50"
+        >
+          <p className="text-white font-semibold text-lg flex items-center justify-center gap-2">
+            📝 <span>Complete your assessment</span>
+          </p>
+          <p className="text-blue-100 text-sm mt-1">
+            The following are now available: {disabledFeaturesList()}
+          </p>
+        </motion.div>
+      )}
+
       <nav className="glass-morphism sticky top-0 z-50 border-b border-white/10">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
@@ -82,6 +149,34 @@ const Navbar = () => {
             <div className="hidden md:flex items-center space-x-8">
               {navItems.map((item) => {
                 const Icon = item.icon
+                const isStudent = user?.role === 'student'
+                
+                // Check which feature each path corresponds to
+                let featureEnabled = true
+                if (item.path === '/messages') featureEnabled = features.messages
+                if (item.path === '/topics') featureEnabled = features.experiments
+                if (item.path === '/feedback') featureEnabled = features.reaction_wall
+                
+                // For students: show disabled if feature is off
+                if (isStudent && !featureEnabled) {
+                  return (
+                    <div key={item.name} className="relative group">
+                      <button
+                        disabled
+                        className="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-500 opacity-50 cursor-not-allowed"
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="font-medium text-sm">{item.name}</span>
+                        <span className="text-[10px] bg-gray-700 px-2 py-0.5 rounded-full">Disabled</span>
+                      </button>
+                      <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap border border-white/20 z-50">
+                        This feature is currently disabled
+                      </div>
+                    </div>
+                  )
+                }
+
+                // For teachers and enabled features
                 return (
                   <Link
                     key={item.name}
@@ -186,24 +281,50 @@ const Navbar = () => {
                           <span>My Element</span>
                         </Link>
 
-                        <Link
-                          href="/messages"
-                          onClick={() => setIsDropdownOpen(false)}
-                          className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                        >
-                          <Send className="w-4 h-4" />
-                          <span>Lab Notes</span>
-                        </Link>
-
                         {user?.role === 'teacher' && (
-                          <Link
-                            href="/create-quiz"
-                            onClick={() => setIsDropdownOpen(false)}
-                            className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                          >
-                            <PlusCircle className="w-4 h-4" />
-                            <span>Design Experiment</span>
-                          </Link>
+                          <>
+                            <Link
+                              href="/teacher-settings"
+                              onClick={() => setIsDropdownOpen(false)}
+                              className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 border-b border-white/10"
+                            >
+                              <Settings className="w-4 h-4" />
+                              <span>Feature Settings</span>
+                            </Link>
+
+                            {canMessageStudents && (
+                              <Link
+                                href="/messages"
+                                onClick={() => setIsDropdownOpen(false)}
+                                className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                              >
+                                <Send className="w-4 h-4" />
+                                <span>Lab Notes</span>
+                              </Link>
+                            )}
+
+                            {canCreateExperiments && (
+                              <Link
+                                href="/create-quiz"
+                                onClick={() => setIsDropdownOpen(false)}
+                                className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                              >
+                                <PlusCircle className="w-4 h-4" />
+                                <span>Design Experiment</span>
+                              </Link>
+                            )}
+
+                            {canViewAnalytics && (
+                              <Link
+                                href="/dashboard"
+                                onClick={() => setIsDropdownOpen(false)}
+                                className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                              >
+                                <TrendingUp className="w-4 h-4" />
+                                <span>Lab Analytics</span>
+                              </Link>
+                            )}
+                          </>
                         )}
 
                         <button
@@ -246,6 +367,30 @@ const Navbar = () => {
           <div className="container mx-auto px-4 py-4 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon
+              const isStudent = user?.role === 'student'
+              
+              // Check which feature each path corresponds to
+              let featureEnabled = true
+              if (item.path === '/messages') featureEnabled = features.messages
+              if (item.path === '/topics') featureEnabled = features.experiments
+              if (item.path === '/feedback') featureEnabled = features.reaction_wall
+
+              // For students: show disabled if feature is off
+              if (isStudent && !featureEnabled) {
+                return (
+                  <button
+                    key={item.name}
+                    disabled
+                    className="flex items-center space-x-2 w-full px-3 py-2 rounded-lg text-gray-500 opacity-50 cursor-not-allowed"
+                    title="This feature is currently disabled"
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="font-medium">{item.name}</span>
+                    <span className="text-[10px] bg-gray-700 px-2 py-0.5 rounded-full ml-auto">Disabled</span>
+                  </button>
+                )
+              }
+
               return (
                 <Link
                   key={item.name}
@@ -284,24 +429,50 @@ const Navbar = () => {
                     <span>My Element</span>
                   </Link>
 
-                  <Link
-                    href="/messages"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>Lab Notes</span>
-                  </Link>
-
                   {user?.role === 'teacher' && (
-                    <Link
-                      href="/create-quiz"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
-                    >
-                      <PlusCircle className="w-4 h-4" />
-                      <span>Design Experiment</span>
-                    </Link>
+                    <>
+                      <Link
+                        href="/teacher-settings"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Feature Settings</span>
+                      </Link>
+
+                      {canMessageStudents && (
+                        <Link
+                          href="/messages"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                        >
+                          <Send className="w-4 h-4" />
+                          <span>Lab Notes</span>
+                        </Link>
+                      )}
+
+                      {canCreateExperiments && (
+                        <Link
+                          href="/create-quiz"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                        >
+                          <PlusCircle className="w-4 h-4" />
+                          <span>Design Experiment</span>
+                        </Link>
+                      )}
+
+                      {canViewAnalytics && (
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                        >
+                          <TrendingUp className="w-4 h-4" />
+                          <span>Lab Analytics</span>
+                        </Link>
+                      )}
+                    </>
                   )}
 
                   <button

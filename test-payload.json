@@ -1,0 +1,7 @@
+﻿{
+    "features":  {
+                     "messages":  true,
+                     "reaction_wall":  true,
+                     "experiments":  true
+                 }
+}

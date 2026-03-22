@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import {
   MessageSquare,
   PlusCircle,
@@ -14,17 +15,56 @@ import {
   Trophy,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import FeatureRestricted from '@/components/ui/FeatureRestricted'
 import axios from 'axios'
 import Link from 'next/link'
 
 export default function FeedbackPage() {
-  const { user, isAuthenticated, token } = useAuthStore()
+  const router = useRouter()
+  const { user, isAuthenticated, token, loading: authLoading } = useAuthStore()
   const [feedbacks, setFeedbacks] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [reactingId, setReactingId] = useState(null)
+  const [featuresLoading, setFeaturesLoading] = useState(true)
+  const [featureEnabled, setFeatureEnabled] = useState(true)
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.push('/login')
+  }, [authLoading, isAuthenticated, router])
+
+  // Check if reaction_wall feature is enabled - refetch periodically
+  useEffect(() => {
+    const checkFeature = async () => {
+      try {
+        setFeaturesLoading(true)
+        const { data } = await axios.get('/api/features/status')
+        setFeatureEnabled(data.features?.reaction_wall ?? true)
+        console.log('Feedback page - feature status:', data.features?.reaction_wall)
+      } catch (error) {
+        console.error('Error checking feature status:', error)
+        setFeatureEnabled(true) // Default to enabled on error
+      } finally {
+        setFeaturesLoading(false)
+      }
+    }
+
+    if (!authLoading && isAuthenticated) {
+      checkFeature()
+      
+      // Refetch every 5 seconds to stay in sync
+      const interval = setInterval(checkFeature, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading, isAuthenticated])
+
+  // Show restricted message for students if feature is disabled
+  if (!authLoading && isAuthenticated && user?.role === 'student' && !featureEnabled) {
+    return <FeatureRestricted feature="Reaction Wall" />
+  }
 
   useEffect(() => {
     fetchFeedbacks()

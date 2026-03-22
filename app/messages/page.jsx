@@ -16,6 +16,7 @@ import {
   Link2,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import FeatureRestricted from '@/components/ui/FeatureRestricted'
 import axios from 'axios'
 
 function MessagesContent() {
@@ -33,12 +34,44 @@ function MessagesContent() {
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [featuresLoading, setFeaturesLoading] = useState(true)
+  const [featureEnabled, setFeatureEnabled] = useState(true)
   const messagesEndRef = useRef(null)
 
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.push('/login')
   }, [authLoading, isAuthenticated, router])
+
+  // Check if messages feature is enabled - refetch periodically
+  useEffect(() => {
+    const checkFeature = async () => {
+      try {
+        setFeaturesLoading(true)
+        const { data } = await axios.get('/api/features/status')
+        setFeatureEnabled(data.features?.messages ?? true)
+        console.log('Messages page - feature status:', data.features?.messages)
+      } catch (error) {
+        console.error('Error checking feature status:', error)
+        setFeatureEnabled(true) // Default to enabled on error
+      } finally {
+        setFeaturesLoading(false)
+      }
+    }
+
+    if (!authLoading && isAuthenticated) {
+      checkFeature()
+      
+      // Refetch every 5 seconds to stay in sync
+      const interval = setInterval(checkFeature, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading, isAuthenticated])
+
+  // Show restricted message for students if feature is disabled
+  if (!authLoading && isAuthenticated && currentUser?.role === 'student' && !featureEnabled) {
+    return <FeatureRestricted feature="Lab Notes (Messages)" />
+  }
 
   // Set active chat from store on mount
   useEffect(() => {
