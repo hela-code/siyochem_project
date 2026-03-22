@@ -268,7 +268,7 @@ function MessagesContent() {
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <MessageCircle className="w-8 h-8 text-primary-400" />
-              Messages
+              Element Card
             </h1>
           </div>
 

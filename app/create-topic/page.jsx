@@ -208,8 +208,8 @@ export default function CreateTopic() {
           >
             <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-4" />
           </motion.div>
-          <h2 className="text-2xl font-bold text-white mb-2">Topic Created!</h2>
-          <p className="text-gray-400">Redirecting to your new topic...</p>
+          <h2 className="text-2xl font-bold text-white mb-2">Experiment Created!</h2>
+          <p className="text-gray-400">Redirecting to your new experiment...</p>
         </motion.div>
       </div>
     )
@@ -231,7 +231,7 @@ export default function CreateTopic() {
             <FlaskConical className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">Create New Topic</h1>
+            <h1 className="text-3xl font-bold text-white">Create New Experiment</h1>
             <p className="text-gray-400 text-sm">Start a chemistry discussion</p>
           </div>
         </div>
@@ -543,7 +543,7 @@ export default function CreateTopic() {
                   ) : (
                     <>
                       <BookOpen className="w-5 h-5" />
-                      Create Topic
+                      Create Experiment
                     </>
                   )}
                 </motion.button>

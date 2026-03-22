@@ -310,12 +310,23 @@ const Navbar = () => {
 
                             {canCreateExperiments && (
                               <Link
+                                href="/create-topic"
+                                onClick={() => setIsDropdownOpen(false)}
+                                className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                              >
+                                <PlusCircle className="w-4 h-4" />
+                                <span>Create Experiment</span>
+                              </Link>
+                            )}
+
+                            {canCreateExperiments && (
+                              <Link
                                 href="/create-quiz"
                                 onClick={() => setIsDropdownOpen(false)}
                                 className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                               >
                                 <PlusCircle className="w-4 h-4" />
-                                <span>Design Experiment</span>
+                                <span>Design Lab Test</span>
                               </Link>
                             )}
 
@@ -458,12 +469,23 @@ const Navbar = () => {
 
                       {canCreateExperiments && (
                         <Link
+                          href="/create-topic"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                        >
+                          <PlusCircle className="w-4 h-4" />
+                          <span>Create Experiment</span>
+                        </Link>
+                      )}
+
+                      {canCreateExperiments && (
+                        <Link
                           href="/create-quiz"
                           onClick={() => setIsMenuOpen(false)}
                           className="flex items-center space-x-2 w-full px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
                         >
                           <PlusCircle className="w-4 h-4" />
-                          <span>Design Experiment</span>
+                          <span>Design Lab Test</span>
                         </Link>
                       )}
 
