@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   MessageCircle,
@@ -20,15 +20,13 @@ import axios from 'axios'
 
 function MessagesContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const chatWith = searchParams.get('chat')
 
-  const { user: currentUser, isAuthenticated, token, loading: authLoading } = useAuthStore()
+  const { user: currentUser, isAuthenticated, token, loading: authLoading, activeChatId, setActiveChatId } = useAuthStore()
 
   const [conversations, setConversations] = useState([])
   const [bondedUsers, setBondedUsers] = useState([])
   const [loadingConvos, setLoadingConvos] = useState(true)
-  const [activeChat, setActiveChat] = useState(chatWith || null)
+  const [activeChat, setActiveChat] = useState(null)
   const [partner, setPartner] = useState(null)
   const [messages, setMessages] = useState([])
   const [loadingMessages, setLoadingMessages] = useState(false)
@@ -41,6 +39,14 @@ function MessagesContent() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.push('/login')
   }, [authLoading, isAuthenticated, router])
+
+  // Set active chat from store on mount
+  useEffect(() => {
+    if (activeChatId) {
+      setActiveChat(activeChatId)
+      setActiveChatId(null) // Clear it after reading
+    }
+  }, [activeChatId, setActiveChatId])
 
   // Fetch conversations
   const fetchConversations = async (showLoading = true) => {
@@ -162,14 +168,13 @@ function MessagesContent() {
 
   const openChat = (partnerId) => {
     setActiveChat(partnerId)
-    router.replace(`/messages?chat=${partnerId}`, { scroll: false })
+    setActiveChatId(partnerId)
   }
 
   const closeChat = () => {
     setActiveChat(null)
     setPartner(null)
     setMessages([])
-    router.replace('/messages', { scroll: false })
     // Refresh conversation list to show any new conversations
     fetchConversations(false)
   }

@@ -12,6 +12,7 @@ const useAuthStore = create(
       token: null,
       isAuthenticated: false,
       loading: true,
+      activeChatId: null,
 
       // Actions
       login: async (credentials) => {
@@ -102,6 +103,10 @@ const useAuthStore = create(
             message: error.response?.data?.message || 'Profile update failed',
           }
         }
+      },
+
+      setActiveChatId: (chatId) => {
+        set({ activeChatId: chatId })
       },
     }),
     {

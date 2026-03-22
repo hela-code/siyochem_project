@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useAuthStore } from '@/stores/authStore'
 import {
   User,
   Mail,
@@ -36,7 +37,6 @@ import {
   Trash2,
   Send,
 } from 'lucide-react'
-import { useAuthStore } from '@/stores/authStore'
 import axios from 'axios'
 
 export default function Profile() {
@@ -427,7 +427,11 @@ export default function Profile() {
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => router.push(`/messages?chat=${id}`)}
+                        onClick={() => {
+                          const { setActiveChatId } = useAuthStore.getState()
+                          setActiveChatId(id)
+                          router.push('/messages')
+                        }}
                         className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20 hover:text-white transition-all duration-300 shrink-0"
                       >
                         <Send className="w-4 h-4" />
@@ -1213,7 +1217,9 @@ export default function Profile() {
                             whileTap={{ scale: 0.9 }}
                             onClick={() => {
                               setShowBondList(false)
-                              router.push(`/messages?chat=${b.id}`)
+                              const { setActiveChatId } = useAuthStore.getState()
+                              setActiveChatId(b.id)
+                              router.push('/messages')
                             }}
                             className="p-2 text-gray-400 hover:text-primary-400 hover:bg-white/5 rounded-lg transition-colors shrink-0"
                             title="Message"
