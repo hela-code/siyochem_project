@@ -20,6 +20,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import FeatureRestricted from '@/components/ui/FeatureRestricted'
 
 const categories = [
   { value: 'all', label: 'All Categories' },
@@ -55,7 +56,7 @@ const formatTimeAgo = (dateStr) => {
 }
 
 export default function Quizzes() {
-  const { user } = useAuthStore()
+  const { user, isAuthenticated, loading: authLoading } = useAuthStore()
   const [quizzes, setQuizzes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -63,6 +64,31 @@ export default function Quizzes() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 })
+  const [featuresLoading, setFeaturesLoading] = useState(true)
+  const [featureEnabled, setFeatureEnabled] = useState(true)
+
+  // Check if features are enabled
+  useEffect(() => {
+    const checkFeatures = async () => {
+      try {
+        setFeaturesLoading(true)
+        const { data } = await axios.get('/api/features/status')
+        // Both experiments (Design) and start_experiment must be enabled
+        const isEnabled = (data.features?.experiments ?? true) && (data.features?.start_experiment ?? true)
+        setFeatureEnabled(isEnabled)
+        console.log('Quizzes page - feature status:', { experiments: data.features?.experiments, start_experiment: data.features?.start_experiment, combined: isEnabled })
+      } catch (error) {
+        console.error('Error checking feature status:', error)
+        setFeatureEnabled(true) // Default to enabled on error
+      } finally {
+        setFeaturesLoading(false)
+      }
+    }
+
+    if (!authLoading && isAuthenticated) {
+      checkFeatures()
+    }
+  }, [authLoading, isAuthenticated])
 
   const fetchQuizzes = useCallback(async () => {
     try {
@@ -129,6 +155,21 @@ export default function Quizzes() {
 
   return (
     <div className="min-h-screen">
+      {/* Feature disabled warning for students */}
+      {!authLoading && isAuthenticated && user?.role === 'student' && !featureEnabled && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-3"
+        >
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-amber-300 font-medium">Experiments Currently Paused</p>
+            <p className="text-amber-200/70 text-sm">You can view past experiments but cannot start new ones right now. Check back later!</p>
+          </div>
+        </motion.div>
+      )}
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>

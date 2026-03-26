@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useAuthStore } from '@/stores/authStore'
 import {
   User,
   Mail,
@@ -36,7 +37,6 @@ import {
   Trash2,
   Send,
 } from 'lucide-react'
-import { useAuthStore } from '@/stores/authStore'
 import axios from 'axios'
 
 export default function Profile() {
@@ -427,7 +427,11 @@ export default function Profile() {
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => router.push(`/messages?chat=${id}`)}
+                        onClick={() => {
+                          const { setActiveChatId } = useAuthStore.getState()
+                          setActiveChatId(id)
+                          router.push('/messages')
+                        }}
                         className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20 hover:text-white transition-all duration-300 shrink-0"
                       >
                         <Send className="w-4 h-4" />
@@ -452,10 +456,10 @@ export default function Profile() {
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { icon: Link2, value: isOwnProfile ? (outgoingBondCount || 0) : (bondCount || 0), label: isOwnProfile ? 'My Bonds' : 'Bonds', color: 'text-cyan-400', clickable: true },
-              { icon: BookOpen, value: user.stats?.postsCount || 0, label: 'Reactions', color: 'text-blue-400' },
-              { icon: Brain, value: user.stats?.quizzesTaken || 0, label: 'Experiments', color: 'text-purple-400' },
-              { icon: Award, value: `${user.stats?.averageScore || 0}%`, label: 'Avg Yield', color: 'text-yellow-400' },
+              { icon: Link2, value: isOwnProfile ? (outgoingBondCount || 0) : (bondCount || 0), label: isOwnProfile ? 'My Connections' : 'Bonded', color: 'text-cyan-400', clickable: true },
+              { icon: BookOpen, value: user.topicCount || 0, label: 'Experiments', color: 'text-green-400' },
+              { icon: MessageCircle, value: user.stats?.postsCount || 0, label: 'Reactions', color: 'text-blue-400' },
+              { icon: Award, value: `${user.stats?.averageScore || 0}%`, label: 'Avg Score', color: 'text-yellow-400' },
             ].map(({ icon: Icon, value, label, color, clickable }) => (
               <div
                 key={label}
@@ -712,7 +716,7 @@ export default function Profile() {
                 {/* Intro / About */}
                 <div className="glass-card p-6 rounded-xl">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <User className="w-5 h-5 text-primary-400" /> Intro
+                    <User className="w-5 h-5 text-primary-400" /> Student Profile
                   </h3>
                   {user.profile?.bio && (
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">{user.profile.bio}</p>
@@ -744,6 +748,64 @@ export default function Profile() {
                         <span>Last active {timeAgo(user.lastLogin)}</span>
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* Statistics Card */}
+                <div className="glass-card p-6 rounded-xl">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-primary-400" /> Learning Stats
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-400 text-sm">Experiments Created</span>
+                        <span className="text-white font-bold text-lg">{user.topicCount || 0}</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style={{ width: `${Math.min(100, (user.topicCount || 0) * 10)}%` }}></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-400 text-sm">Reactions Posted</span>
+                        <span className="text-white font-bold text-lg">{user.stats?.postsCount || 0}</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full" style={{ width: `${Math.min(100, (user.stats?.postsCount || 0) * 10)}%` }}></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-400 text-sm">Lab Tests Taken</span>
+                        <span className="text-white font-bold text-lg">{user.stats?.quizzesTaken || 0}</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-purple-500 to-violet-500 h-2 rounded-full" style={{ width: `${Math.min(100, (user.stats?.quizzesTaken || 0) * 10)}%` }}></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-400 text-sm">Average Score</span>
+                        <span className="text-white font-bold text-lg">{user.stats?.averageScore || 0}%</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full" style={{ width: `${user.stats?.averageScore || 0}%` }}></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-400 text-sm">Reactions Received</span>
+                        <span className="text-white font-bold text-lg">{user.stats?.likesReceived || 0}</span>
+                      </div>
+                      <div className="w-full bg-white/10 rounded-full h-2">
+                        <div className="bg-gradient-to-r from-red-500 to-pink-500 h-2 rounded-full" style={{ width: `${Math.min(100, (user.stats?.likesReceived || 0) * 5)}%` }}></div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Social Links */}
@@ -810,7 +872,7 @@ export default function Profile() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {activities.slice(0, 8).map((activity, index) => (
+                      {activities.slice(0, 5).map((activity, index) => (
                         <motion.div
                           key={activity.id || index}
                           initial={{ opacity: 0, x: -20 }}
@@ -862,6 +924,17 @@ export default function Profile() {
                           </div>
                         </motion.div>
                       ))}
+                    </div>
+                  )}
+                  
+                  {activities.length > 5 && (
+                    <div className="mt-6 pt-6 border-t border-white/10">
+                      <button 
+                        onClick={() => setActiveTab('activity')}
+                        className="w-full py-2 text-center text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors"
+                      >
+                        View All Activity →
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1125,6 +1198,37 @@ export default function Profile() {
                   <p className="text-gray-500 text-sm italic">No bio added yet.</p>
                 )}
               </div>
+
+              {/* Learning Achievement Summary — only show if user has achievements */}
+              {(user.topicCount > 0 || user.stats?.postsCount > 0 || user.stats?.quizzesTaken > 0 || user.stats?.likesReceived > 0) && (
+                <div className="glass-card p-6 rounded-xl md:col-span-2">
+                  <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-yellow-400" /> Learning Journey
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="bg-white/5 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-green-400">{user.topicCount || 0}</p>
+                      <p className="text-xs text-gray-400 mt-2">Experiments Created</p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-blue-400">{user.stats?.postsCount || 0}</p>
+                      <p className="text-xs text-gray-400 mt-2">Reactions Posted</p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-purple-400">{user.stats?.quizzesTaken || 0}</p>
+                      <p className="text-xs text-gray-400 mt-2">Lab Tests Taken</p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-yellow-400">{user.stats?.averageScore || 0}%</p>
+                      <p className="text-xs text-gray-400 mt-2">Average Score</p>
+                    </div>
+                    <div className="bg-white/5 rounded-lg p-4 text-center">
+                      <p className="text-2xl font-bold text-red-400">{user.stats?.likesReceived || 0}</p>
+                      <p className="text-xs text-gray-400 mt-2">Reactions Received</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -1213,7 +1317,9 @@ export default function Profile() {
                             whileTap={{ scale: 0.9 }}
                             onClick={() => {
                               setShowBondList(false)
-                              router.push(`/messages?chat=${b.id}`)
+                              const { setActiveChatId } = useAuthStore.getState()
+                              setActiveChatId(b.id)
+                              router.push('/messages')
                             }}
                             className="p-2 text-gray-400 hover:text-primary-400 hover:bg-white/5 rounded-lg transition-colors shrink-0"
                             title="Message"

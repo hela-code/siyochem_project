@@ -5,6 +5,7 @@ import { requireAuth, extractToken, verifyToken } from '@/lib/auth'
 export const dynamic = 'force-dynamic'
 
 // GET /api/users/[id]
+// Fetch by UUID id
 export async function GET(request, { params }) {
   try {
     const sql = getSQL()
@@ -25,11 +26,13 @@ export async function GET(request, { params }) {
 
     const u = users[0]
 
-    const [quizCountResult, topicCountResult, bondCountResult, outgoingBondCountResult] = await Promise.all([
+    const [quizCountResult, topicCountResult, bondCountResult, outgoingBondCountResult, postsCountResult, averageScoreResult] = await Promise.all([
       sql`SELECT COUNT(*) as count FROM quizzes WHERE author_id = ${params.id}`,
       sql`SELECT COUNT(*) as count FROM topics WHERE author_id = ${params.id}`,
       sql`SELECT COUNT(*) as count FROM profile_bonds WHERE profile_id = ${params.id}`,
       sql`SELECT COUNT(*) as count FROM profile_bonds WHERE user_id = ${params.id}`,
+      sql`SELECT COUNT(*) as count FROM posts WHERE author_id = ${params.id}`,
+      sql`SELECT COALESCE(AVG(score), 0) as avg_score FROM quiz_attempts WHERE student_id = ${params.id}`,
     ])
 
     // Check if the current viewer has bonded this profile
@@ -62,10 +65,10 @@ export async function GET(request, { params }) {
           grade: u.grade,
         },
         stats: {
-          postsCount: u.posts_count,
+          postsCount: parseInt(postsCountResult[0].count),
           likesReceived: u.likes_received,
-          quizzesTaken: u.quizzes_taken,
-          averageScore: u.average_score,
+          quizzesTaken: parseInt(quizCountResult[0].count),
+          averageScore: parseFloat(averageScoreResult[0].avg_score || 0),
         },
         socialLinks: {
           twitter: u.twitter,

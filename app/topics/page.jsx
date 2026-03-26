@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   BookOpen,
   PlusCircle,
@@ -14,8 +15,10 @@ import {
   TrendingUp,
   User,
   Loader2,
+  AlertCircle,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import FeatureRestricted from '@/components/ui/FeatureRestricted'
 import axios from 'axios'
 
 const categories = [
@@ -30,13 +33,48 @@ const categories = [
 ]
 
 export default function Topics() {
+  const router = useRouter()
   const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState(null)
-  const { isAuthenticated } = useAuthStore()
+  const [featuresLoading, setFeaturesLoading] = useState(true)
+  const [featureEnabled, setFeatureEnabled] = useState(true)
+  const { isAuthenticated, user, loading: authLoading } = useAuthStore()
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.push('/login')
+  }, [authLoading, isAuthenticated, router])
+
+  // Check if experiments feature is enabled - refetch periodically
+  useEffect(() => {
+    const checkFeature = async () => {
+      try {
+        setFeaturesLoading(true)
+        const { data } = await axios.get('/api/features/status')
+        // Both experiments (Design) and start_experiment must be enabled for creating experiments
+        const isEnabled = (data.features?.experiments ?? true) && (data.features?.start_experiment ?? true)
+        setFeatureEnabled(isEnabled)
+        console.log('Topics page - feature status:', { experiments: data.features?.experiments, start_experiment: data.features?.start_experiment, canCreateExperiments: isEnabled })
+      } catch (error) {
+        console.error('Error checking feature status:', error)
+        setFeatureEnabled(true) // Default to enabled on error
+      } finally {
+        setFeaturesLoading(false)
+      }
+    }
+
+    if (!authLoading && isAuthenticated) {
+      checkFeature()
+      
+      // Refetch every 5 seconds to stay in sync
+      const interval = setInterval(checkFeature, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading, isAuthenticated])
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -76,18 +114,33 @@ export default function Topics() {
 
   return (
     <div className="min-h-screen">
+      {/* Feature disabled warning for students */}
+      {!authLoading && isAuthenticated && user?.role === 'student' && !featureEnabled && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-3"
+        >
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-amber-300 font-medium">Experiments Currently Paused</p>
+            <p className="text-amber-200/70 text-sm">You can view past experiments but cannot start new ones right now. Check back later!</p>
+          </div>
+        </motion.div>
+      )}
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Chemistry Experiments</h1>
             <p className="text-gray-300">Join experiments and share knowledge with fellow chemistry enthusiasts</p>
           </div>
-          {isAuthenticated && (
+          {isAuthenticated && (!featureEnabled && user?.role === 'student' ? null : (
             <Link href="/create-topic" className="btn-primary mt-4 md:mt-0 inline-flex items-center">
               <PlusCircle className="w-5 h-5 mr-2" />
               Start Experiment
             </Link>
-          )}
+          ))}
         </div>
 
         <div className="flex flex-col md:flex-row gap-4">

@@ -141,7 +141,7 @@ export default function QuizAnalytics() {
                     <XAxis dataKey="range" stroke="#9CA3AF" />
                     <YAxis stroke="#9CA3AF" />
                     <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }} labelStyle={{ color: '#F3F4F6' }} />
-                    <Bar dataKey="count" fill="#f97316" />
+                    <Bar dataKey="count" fill="#007C7C" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

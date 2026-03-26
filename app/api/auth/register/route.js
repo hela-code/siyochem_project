@@ -8,10 +8,11 @@ export async function POST(request) {
     const sql = getSQL()
 
     const body = await request.json()
-    const { username, email, password, role, firstName, lastName, school, grade } = body
+    const { username, email, password, firstName, lastName, school, grade } = body
+    const role = 'student'
 
     // Validate required fields
-    if (!username || !email || !password || !role || !firstName || !lastName) {
+    if (!username || !email || !password || !firstName || !lastName) {
       return NextResponse.json(
         { success: false, message: 'Please provide all required fields' },
         { status: 400 }
@@ -28,13 +29,6 @@ export async function POST(request) {
     if (password.length < 6) {
       return NextResponse.json(
         { success: false, message: 'Password must be at least 6 characters' },
-        { status: 400 }
-      )
-    }
-
-    if (!['student', 'teacher'].includes(role)) {
-      return NextResponse.json(
-        { success: false, message: 'Role must be student or teacher' },
         { status: 400 }
       )
     }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   MessageCircle,
@@ -16,31 +16,65 @@ import {
   Link2,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import FeatureRestricted from '@/components/ui/FeatureRestricted'
 import axios from 'axios'
 
 function MessagesContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const chatWith = searchParams.get('chat')
 
-  const { user: currentUser, isAuthenticated, token, loading: authLoading } = useAuthStore()
+  const { user: currentUser, isAuthenticated, token, loading: authLoading, activeChatId, setActiveChatId } = useAuthStore()
 
   const [conversations, setConversations] = useState([])
   const [bondedUsers, setBondedUsers] = useState([])
   const [loadingConvos, setLoadingConvos] = useState(true)
-  const [activeChat, setActiveChat] = useState(chatWith || null)
+  const [activeChat, setActiveChat] = useState(null)
   const [partner, setPartner] = useState(null)
   const [messages, setMessages] = useState([])
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [featuresLoading, setFeaturesLoading] = useState(true)
+  const [featureEnabled, setFeatureEnabled] = useState(true)
   const messagesEndRef = useRef(null)
 
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.push('/login')
   }, [authLoading, isAuthenticated, router])
+
+  // Check if messages feature is enabled - refetch periodically
+  useEffect(() => {
+    const checkFeature = async () => {
+      try {
+        setFeaturesLoading(true)
+        const { data } = await axios.get('/api/features/status')
+        setFeatureEnabled(data.features?.messages ?? true)
+        console.log('Messages page - feature status:', data.features?.messages)
+      } catch (error) {
+        console.error('Error checking feature status:', error)
+        setFeatureEnabled(true) // Default to enabled on error
+      } finally {
+        setFeaturesLoading(false)
+      }
+    }
+
+    if (!authLoading && isAuthenticated) {
+      checkFeature()
+      
+      // Refetch every 5 seconds to stay in sync
+      const interval = setInterval(checkFeature, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading, isAuthenticated])
+
+  // Set active chat from store on mount
+  useEffect(() => {
+    if (activeChatId) {
+      setActiveChat(activeChatId)
+      setActiveChatId(null) // Clear it after reading
+    }
+  }, [activeChatId, setActiveChatId])
 
   // Fetch conversations
   const fetchConversations = async (showLoading = true) => {
@@ -93,11 +127,6 @@ function MessagesContent() {
     }
     fetchMessages()
   }, [activeChat, token])
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
 
   // Poll for new messages every 5 seconds
   useEffect(() => {
@@ -167,14 +196,13 @@ function MessagesContent() {
 
   const openChat = (partnerId) => {
     setActiveChat(partnerId)
-    router.replace(`/messages?chat=${partnerId}`, { scroll: false })
+    setActiveChatId(partnerId)
   }
 
   const closeChat = () => {
     setActiveChat(null)
     setPartner(null)
     setMessages([])
-    router.replace('/messages', { scroll: false })
     // Refresh conversation list to show any new conversations
     fetchConversations(false)
   }
@@ -195,12 +223,12 @@ function MessagesContent() {
 
   const getAvatarColor = (name = 'U') => {
     const colors = [
-      'from-blue-500 to-cyan-500',
-      'from-purple-500 to-pink-500',
-      'from-green-500 to-emerald-500',
-      'from-orange-500 to-amber-500',
-      'from-red-500 to-rose-500',
-      'from-indigo-500 to-violet-500',
+      'from-primary-500 to-primary-600',
+      'from-accent-500 to-accent-600',
+      'from-tertiary-500 to-tertiary-600',
+      'from-primary-600 to-accent-500',
+      'from-accent-500 to-tertiary-500',
+      'from-tertiary-500 to-primary-600',
     ]
     let hash = 0
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
@@ -227,6 +255,11 @@ function MessagesContent() {
     )
   }
 
+  // Show restricted message for students if feature is disabled
+  if (currentUser?.role === 'student' && !featureEnabled) {
+    return <FeatureRestricted feature="Lab Notes (Messages)" />
+  }
+
   return (
     <div className="min-h-screen pb-8">
       <div className="max-w-5xl mx-auto">
@@ -235,7 +268,7 @@ function MessagesContent() {
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <MessageCircle className="w-8 h-8 text-primary-400" />
-              Messages
+              Element Card
             </h1>
           </div>
 

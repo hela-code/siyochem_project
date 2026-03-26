@@ -60,8 +60,8 @@ export default function Login() {
             >
               <FlaskConical className="w-8 h-8 text-white" />
             </motion.div>
-            <h1 className="text-3xl font-bold text-gradient mb-2">Welcome Back to the Lab</h1>
-            <p className="text-gray-300">Enter your Chem Hub lab credentials</p>
+            <h1 className="text-3xl font-bold text-gradient mb-2">Welcome Back</h1>
+            <p className="text-gray-300">Sign in to continue to Chem Hub</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -82,7 +82,7 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-gray-300 text-sm font-medium mb-2">Secret Formula</label>
+              <label className="block text-gray-300 text-sm font-medium mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -112,28 +112,19 @@ export default function Login() {
               {loading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Entering the Lab...</span>
+                  <span>Signing in...</span>
                 </div>
               ) : (
-                'Enter the Lab'
+                'Sign In'
               )}
             </button>
           </form>
-
-          {/* Demo Accounts */}
-          <div className="mt-6 p-4 bg-white/5 rounded-lg">
-            <p className="text-gray-300 text-sm mb-2">Demo Accounts:</p>
-            <div className="space-y-1 text-xs">
-              <p className="text-gray-400">Student: student@example.com / password123</p>
-              <p className="text-gray-400">Teacher: teacher@example.com / password123</p>
-            </div>
-          </div>
 
           <div className="text-center mt-6">
             <p className="text-gray-300">
               Don&apos;t have an account?{' '}
               <Link href="/register" className="text-primary-400 hover:text-primary-300 transition-colors">
-                Join the Lab
+                Create an account
               </Link>
             </p>
           </div>

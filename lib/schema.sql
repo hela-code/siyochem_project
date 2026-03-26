@@ -35,6 +35,27 @@ CREATE TABLE users (
 );
 
 -- ==================
+-- FEATURE SETTINGS
+-- ==================
+CREATE TABLE feature_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  feature_name VARCHAR(100) UNIQUE NOT NULL,
+  is_enabled BOOLEAN DEFAULT TRUE,
+  description VARCHAR(500),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insert default features
+INSERT INTO feature_settings (feature_name, is_enabled, description) VALUES
+  ('messages', true, 'Enable/disable messages (Lab Notes)'),
+  ('experiments', true, 'Enable/disable chemistry experiments'),
+  ('start_experiment', true, 'Enable/disable student ability to start/take experiments'),
+  ('add_reaction', true, 'Enable/disable student ability to add reactions/catalyze topics'),
+  ('reaction_wall', true, 'Enable/disable reaction wall');
+
+
+-- ==================
 -- TOPICS
 -- ==================
 CREATE TABLE topics (

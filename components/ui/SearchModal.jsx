@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, X, Users, BookOpen, Brain, TrendingUp } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
 
 const SearchModal = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('')
@@ -28,38 +29,56 @@ const SearchModal = ({ isOpen, onClose }) => {
 
     setLoading(true)
 
-    setTimeout(() => {
-      const mockResults = [
-        {
-          type: 'topic',
-          title: 'Organic Chemistry Basics',
-          description: 'Introduction to organic compounds and reactions',
-          icon: BookOpen,
-          path: '/topics/1',
-        },
-        {
-          type: 'user',
-          title: 'John Doe',
-          description: 'A/L Chemistry Student',
-          icon: Users,
-          path: '/profile/1',
-        },
-        {
-          type: 'quiz',
-          title: 'Chemical Bonding Quiz',
-          description: 'Test your knowledge of chemical bonds',
-          icon: Brain,
-          path: '/quizzes/1',
-        },
-      ].filter(
-        (result) =>
-          result.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          result.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    try {
+      // Parallel API calls to search topics, users, and quizzes
+      const [topicsRes, usersRes, quizzesRes] = await Promise.all([
+        axios.get('/api/topics', { 
+          params: { search: searchQuery, limit: 5 } 
+        }).catch(() => ({ data: { topics: [] } })),
+        axios.get('/api/users/search', { 
+          params: { q: searchQuery, limit: 5 } 
+        }).catch(() => ({ data: { users: [] } })),
+        axios.get('/api/quizzes', { 
+          params: { search: searchQuery, limit: 5 } 
+        }).catch(() => ({ data: { quizzes: [] } })),
+      ])
 
-      setSearchResults(mockResults)
+      const topics = topicsRes.data?.topics || []
+      const users = usersRes.data?.users || []
+      const quizzes = quizzesRes.data?.quizzes || []
+
+      // Format results
+      const formattedResults = [
+        ...topics.map((t) => ({
+          type: 'topic',
+          title: t.title || t.name,
+          description: t.description,
+          icon: BookOpen,
+          path: `/topics/${t.id || t._id}`,
+        })),
+        ...users.map((u) => ({
+          type: 'user',
+          title: `${u.profile?.firstName || ''} ${u.profile?.lastName || ''}`.trim() || u.username,
+          description: u.profile?.school || `@${u.username}`,
+          icon: Users,
+          path: `/profile/${u._id || u.id}`,
+        })),
+        ...quizzes.map((q) => ({
+          type: 'quiz',
+          title: q.title,
+          description: q.description,
+          icon: Brain,
+          path: `/quizzes/${q.id}`,
+        })),
+      ]
+
+      setSearchResults(formattedResults)
+    } catch (err) {
+      console.error('Search error:', err)
+      setSearchResults([])
+    } finally {
       setLoading(false)
-    }, 300)
+    }
   }
 
   const handleResultClick = (result) => {

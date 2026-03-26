@@ -53,6 +53,11 @@ const userSchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
     },
+    teacherPermissions: {
+      canMessageStudents: { type: Boolean, default: true },
+      canCreateExperiments: { type: Boolean, default: true },
+      canViewAnalytics: { type: Boolean, default: true },
+    },
   },
   { timestamps: true }
 )

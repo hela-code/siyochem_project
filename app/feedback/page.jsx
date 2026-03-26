@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import {
   MessageSquare,
   PlusCircle,
@@ -12,23 +13,69 @@ import {
   FlaskConical,
   Flame,
   Trophy,
+  AlertCircle,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
+import FeatureRestricted from '@/components/ui/FeatureRestricted'
 import axios from 'axios'
 import Link from 'next/link'
 
 export default function FeedbackPage() {
-  const { user, isAuthenticated, token } = useAuthStore()
+  const router = useRouter()
+  const { user, isAuthenticated, token, loading: authLoading } = useAuthStore()
   const [feedbacks, setFeedbacks] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [reactingId, setReactingId] = useState(null)
+  const [featuresLoading, setFeaturesLoading] = useState(true)
+  const [featureEnabled, setFeatureEnabled] = useState(true)
+  const [addReactionEnabled, setAddReactionEnabled] = useState(true)
 
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.push('/login')
+  }, [authLoading, isAuthenticated, router])
+
+  // Check if add_reaction feature is enabled - refetch periodically
+  useEffect(() => {
+    const checkFeature = async () => {
+      try {
+        setFeaturesLoading(true)
+        const { data } = await axios.get('/api/features/status')
+        setFeatureEnabled(data.features?.reaction_wall ?? true)
+        // Check if add_reaction feature is enabled
+        const canAddReaction = data.features?.add_reaction ?? true
+        setAddReactionEnabled(canAddReaction)
+        console.log('Feedback page - features:', { reaction_wall: data.features?.reaction_wall, add_reaction: canAddReaction })
+      } catch (error) {
+        console.error('Error checking feature status:', error)
+        setFeatureEnabled(true) // Default to enabled on error
+        setAddReactionEnabled(true)
+      } finally {
+        setFeaturesLoading(false)
+      }
+    }
+
+    if (!authLoading && isAuthenticated) {
+      checkFeature()
+      
+      // Refetch every 5 seconds to stay in sync
+      const interval = setInterval(checkFeature, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading, isAuthenticated])
+
+  // Fetch feedbacks
   useEffect(() => {
     fetchFeedbacks()
   }, [])
+
+  // Show restricted message for students if feature is disabled
+  if (!authLoading && isAuthenticated && user?.role === 'student' && !featureEnabled) {
+    return <FeatureRestricted feature="Reaction Wall" />
+  }
 
   const fetchFeedbacks = async () => {
     try {
@@ -137,6 +184,21 @@ export default function FeedbackPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Add Reaction disabled warning for students */}
+      {!authLoading && isAuthenticated && user?.role === 'student' && !addReactionEnabled && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl flex items-center gap-3"
+        >
+          <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-orange-300 font-medium">Reactions Currently Disabled</p>
+            <p className="text-orange-200/70 text-sm">You can view past reactions but cannot add new ones right now. Check back later!</p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -152,7 +214,7 @@ export default function FeedbackPage() {
               Share your reactions and read feedback from fellow lab partners
             </p>
           </div>
-          {isAuthenticated && (
+          {isAuthenticated && (!addReactionEnabled && user?.role === 'student' ? null : (
             <button
               onClick={() => setShowForm(!showForm)}
               className="btn-primary mt-4 md:mt-0 inline-flex items-center"
@@ -169,12 +231,12 @@ export default function FeedbackPage() {
                 </>
               )}
             </button>
-          )}
+          ))}
         </div>
 
         {/* Add Feedback Form */}
         <AnimatePresence>
-          {showForm && isAuthenticated && (
+          {showForm && isAuthenticated && (!(user?.role === 'student' && !addReactionEnabled)) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}

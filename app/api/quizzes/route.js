@@ -14,10 +14,43 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 10
     const offset = (page - 1) * limit
     const category = searchParams.get('category')
+    const search = searchParams.get('search')
 
     // Build conditions dynamically
     let quizzes, countResult
-    if (category && category !== 'all') {
+    if (search && category && category !== 'all') {
+      ;[quizzes, countResult] = await Promise.all([
+        sql`
+          SELECT q.*,
+            u.id as author_uid, u.username, u.first_name, u.last_name, u.avatar,
+            (SELECT COUNT(*) FROM quiz_attempts WHERE quiz_id = q.id) as total_attempts
+          FROM quizzes q
+          JOIN users u ON q.author_id = u.id
+          WHERE q.is_published = true AND q.is_active = true AND q.category = ${category}
+            AND to_tsvector('english', q.title || ' ' || q.description) @@ plainto_tsquery('english', ${search})
+          ORDER BY q.created_at DESC
+          LIMIT ${limit} OFFSET ${offset}
+        `,
+        sql`SELECT COUNT(*) as count FROM quizzes WHERE is_published = true AND is_active = true AND category = ${category}
+          AND to_tsvector('english', title || ' ' || description) @@ plainto_tsquery('english', ${search})`,
+      ])
+    } else if (search) {
+      ;[quizzes, countResult] = await Promise.all([
+        sql`
+          SELECT q.*,
+            u.id as author_uid, u.username, u.first_name, u.last_name, u.avatar,
+            (SELECT COUNT(*) FROM quiz_attempts WHERE quiz_id = q.id) as total_attempts
+          FROM quizzes q
+          JOIN users u ON q.author_id = u.id
+          WHERE q.is_published = true AND q.is_active = true
+            AND to_tsvector('english', q.title || ' ' || q.description) @@ plainto_tsquery('english', ${search})
+          ORDER BY q.created_at DESC
+          LIMIT ${limit} OFFSET ${offset}
+        `,
+        sql`SELECT COUNT(*) as count FROM quizzes WHERE is_published = true AND is_active = true
+          AND to_tsvector('english', title || ' ' || description) @@ plainto_tsquery('english', ${search})`,
+      ])
+    } else if (category && category !== 'all') {
       ;[quizzes, countResult] = await Promise.all([
         sql`
           SELECT q.*,
